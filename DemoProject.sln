@@ -9,6 +9,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DataAccessLayer", "DataAcce
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DemoJira.DataAccess", "DemoJira.DataAccess\DemoJira.DataAccess.csproj", "{9D93F1D5-34C9-4181-98F7-63ABDE3F2733}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Domain Layer", "Domain Layer", "{8C8F444F-9E91-4C82-93D3-8703FA1AF6D0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DemoJira.DomainLayer", "DemoJira.DomainLayer\DemoJira.DomainLayer.csproj", "{F99109AE-C281-4363-AAA7-1E82390E1877}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -19,6 +23,10 @@ Global
 		{9D93F1D5-34C9-4181-98F7-63ABDE3F2733}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9D93F1D5-34C9-4181-98F7-63ABDE3F2733}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9D93F1D5-34C9-4181-98F7-63ABDE3F2733}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F99109AE-C281-4363-AAA7-1E82390E1877}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F99109AE-C281-4363-AAA7-1E82390E1877}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F99109AE-C281-4363-AAA7-1E82390E1877}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F99109AE-C281-4363-AAA7-1E82390E1877}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -26,6 +34,8 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{4AE914E1-448C-4F41-8796-65623505C7E1} = {CE946EBA-7AC2-4748-816C-A99758D6485D}
 		{9D93F1D5-34C9-4181-98F7-63ABDE3F2733} = {4AE914E1-448C-4F41-8796-65623505C7E1}
+		{8C8F444F-9E91-4C82-93D3-8703FA1AF6D0} = {CE946EBA-7AC2-4748-816C-A99758D6485D}
+		{F99109AE-C281-4363-AAA7-1E82390E1877} = {8C8F444F-9E91-4C82-93D3-8703FA1AF6D0}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {CFE086D9-B748-479B-A900-36709D704450}
