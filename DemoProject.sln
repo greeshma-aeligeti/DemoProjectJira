@@ -1,0 +1,33 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.8.34511.84
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "TaskManagement", "TaskManagement", "{CE946EBA-7AC2-4748-816C-A99758D6485D}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DataAccessLayer", "DataAccessLayer", "{4AE914E1-448C-4F41-8796-65623505C7E1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DemoJira.DataAccess", "DemoJira.DataAccess\DemoJira.DataAccess.csproj", "{9D93F1D5-34C9-4181-98F7-63ABDE3F2733}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{9D93F1D5-34C9-4181-98F7-63ABDE3F2733}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9D93F1D5-34C9-4181-98F7-63ABDE3F2733}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9D93F1D5-34C9-4181-98F7-63ABDE3F2733}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9D93F1D5-34C9-4181-98F7-63ABDE3F2733}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{4AE914E1-448C-4F41-8796-65623505C7E1} = {CE946EBA-7AC2-4748-816C-A99758D6485D}
+		{9D93F1D5-34C9-4181-98F7-63ABDE3F2733} = {4AE914E1-448C-4F41-8796-65623505C7E1}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {CFE086D9-B748-479B-A900-36709D704450}
+	EndGlobalSection
+EndGlobal
