@@ -6,4 +6,8 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\DemoJira.DataAccess\DemoJira.DataAccess.csproj" />
+  </ItemGroup>
+
 </Project>
