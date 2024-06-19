@@ -19,7 +19,6 @@ namespace DemoJira.DataAccess
         public DbSet<Project> Areas { get; set; }
         public DbSet<Iteration> Iterations { get; set; }
         public DbSet<Description> Descriptions { get; set; }
-
         public DbSet<Status> Statuses { get; set; }
         //public DbSet<Comment> Comments { get; set; }
 

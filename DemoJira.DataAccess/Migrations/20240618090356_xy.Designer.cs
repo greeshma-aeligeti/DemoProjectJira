@@ -4,6 +4,7 @@ using DemoJira.DataAccess;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DemoJira.DataAccess.Migrations
 {
     [DbContext(typeof(SiraDBContext))]
-    partial class SiraDBContextModelSnapshot : ModelSnapshot
+    [Migration("20240618090356_xy")]
+    partial class xy
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -72,6 +75,9 @@ namespace DemoJira.DataAccess.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("TaskId"));
 
+                    b.Property<int>("CurStatusId")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("ExpEndDate")
                         .HasColumnType("datetime2");
 
@@ -100,6 +106,8 @@ namespace DemoJira.DataAccess.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("TaskId");
+
+                    b.HasIndex("CurStatusId");
 
                     b.HasIndex("IterationId");
 
@@ -153,6 +161,12 @@ namespace DemoJira.DataAccess.Migrations
 
             modelBuilder.Entity("DemoJira.DataAccess.Entities.MyTask", b =>
                 {
+                    b.HasOne("DemoJira.DataAccess.Entities.Status", "CurStatus")
+                        .WithMany()
+                        .HasForeignKey("CurStatusId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("DemoJira.DataAccess.Entities.Iteration", "Iteration")
                         .WithMany()
                         .HasForeignKey("IterationId")
@@ -172,6 +186,8 @@ namespace DemoJira.DataAccess.Migrations
                         .IsRequired();
 
                     b.Navigation("Area");
+
+                    b.Navigation("CurStatus");
 
                     b.Navigation("Description");
 

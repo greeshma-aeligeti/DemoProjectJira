@@ -1,6 +1,6 @@
 {
-  "name": "Practice.Blazor.UI",
-  "short_name": "Practice.Blazor.UI",
+  "name": "Practice.Web.UI",
+  "short_name": "Practice.Web.UI",
   "id": "./",
   "start_url": "./",
   "display": "standalone",

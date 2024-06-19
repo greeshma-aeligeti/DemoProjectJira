@@ -1,4 +1,5 @@
 ﻿using DemoJira.Bussiness.DTO;
+using DemoJira.DataAccess.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,7 +10,7 @@ namespace DemoJira.Bussiness.ServiceInterface
 {
     public interface ITaskService
     {
-        Task<TaskDTO> CreateTask(TaskDTO taskDTO);  
+        Task<MyTask> CreateTask(TaskDTO taskDTO);  
         Task<TaskDTO> UpdateTask(int Id,TaskDTO taskDTO);
         Task DeleteTask(int Id);
         Task<TaskDTO> GetTaskById(int Id);

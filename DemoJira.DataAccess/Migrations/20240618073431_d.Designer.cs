@@ -4,6 +4,7 @@ using DemoJira.DataAccess;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DemoJira.DataAccess.Migrations
 {
     [DbContext(typeof(SiraDBContext))]
-    partial class SiraDBContextModelSnapshot : ModelSnapshot
+    [Migration("20240618073431_d")]
+    partial class d
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -54,6 +57,9 @@ namespace DemoJira.DataAccess.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int>("ProjID")
+                        .HasColumnType("int");
+
                     b.Property<int?>("ProjectId")
                         .HasColumnType("int");
 
@@ -71,6 +77,12 @@ namespace DemoJira.DataAccess.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("TaskId"));
+
+                    b.Property<int>("CurStatusId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("DescriptionId")
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("ExpEndDate")
                         .HasColumnType("datetime2");
@@ -92,8 +104,9 @@ namespace DemoJira.DataAccess.Migrations
                         .HasMaxLength(40)
                         .HasColumnType("nvarchar(40)");
 
-                    b.Property<int>("desp")
-                        .HasColumnType("int");
+                    b.Property<string>("desp")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("status")
                         .IsRequired()
@@ -101,11 +114,13 @@ namespace DemoJira.DataAccess.Migrations
 
                     b.HasKey("TaskId");
 
+                    b.HasIndex("CurStatusId");
+
+                    b.HasIndex("DescriptionId");
+
                     b.HasIndex("IterationId");
 
                     b.HasIndex("ProjectId");
-
-                    b.HasIndex("desp");
 
                     b.ToTable("Tasks");
                 });
@@ -153,6 +168,18 @@ namespace DemoJira.DataAccess.Migrations
 
             modelBuilder.Entity("DemoJira.DataAccess.Entities.MyTask", b =>
                 {
+                    b.HasOne("DemoJira.DataAccess.Entities.Status", "CurStatus")
+                        .WithMany()
+                        .HasForeignKey("CurStatusId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("DemoJira.DataAccess.Entities.Description", "Description")
+                        .WithMany()
+                        .HasForeignKey("DescriptionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("DemoJira.DataAccess.Entities.Iteration", "Iteration")
                         .WithMany()
                         .HasForeignKey("IterationId")
@@ -165,13 +192,9 @@ namespace DemoJira.DataAccess.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("DemoJira.DataAccess.Entities.Description", "Description")
-                        .WithMany()
-                        .HasForeignKey("desp")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.Navigation("Area");
+
+                    b.Navigation("CurStatus");
 
                     b.Navigation("Description");
 

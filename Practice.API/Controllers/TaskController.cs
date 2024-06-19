@@ -1,21 +1,25 @@
 ﻿using DemoJira.Bussiness.DTO;
 using DemoJira.Bussiness.ServiceInterface;
 using Microsoft.AspNetCore.Mvc;
+using AutoMapper;
 
 namespace Practice.API.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
+    [Route("api/[controller]")]
     public class TaskController : ControllerBase
     {
         private readonly ITaskService _taskService;
+       // private readonly IMapper _mapper;
         public TaskController(ITaskService taskService)
         {
-            this._taskService = taskService;
+            _taskService = taskService;
+          //  _mapper = mapper;
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAllTasks()
+        [Route("tasks")]
+        public async Task<ActionResult<IEnumerable<TaskDTO>>> GetAllTasks()
         {
             var tasks = await _taskService.GetAllTasks();
             return Ok(tasks);
@@ -34,29 +38,32 @@ namespace Practice.API.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateTask(TaskDTO taskDTO)
+        public async Task<ActionResult<TaskDTO>> CreateTask([FromBody] TaskDTO taskDTO)
         {
-            if(!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-            var createTask=_taskService.CreateTask(taskDTO);
-            return CreatedAtAction(nameof(GetTaskById), new { id = createTask.Id }, createTask);
+           
+         
+            
+                var createdTask = await _taskService.CreateTask(taskDTO);
+               
+               return Ok(createdTask);
+                
+              // return CreatedAtAction(nameof(CreateTask), new { id = createdTask.Id }, createdTask);
+            
+            
 
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateTask(int id,TaskDTO taskDTO)
+        public async Task<IActionResult> UpdateTask(int id,[FromBody]TaskDTO taskDTO)
         {
-            if(id!=taskDTO.Id)
-                return BadRequest();
+          
             var updateTask = await _taskService.UpdateTask(id, taskDTO);
             if (updateTask == null) return NotFound();
 
             return Ok(updateTask);
         }
 
-        [HttpDelete("{id}")]
+        [HttpDelete]
         public async Task<IActionResult> DeleteTask(int id)
         {
             await _taskService.DeleteTask(id);

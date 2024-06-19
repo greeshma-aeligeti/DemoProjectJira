@@ -11,24 +11,28 @@ namespace DemoJira.DataAccess.Repositories
 {
     public class TaskRepos : ITaskRepository
     {
-        private readonly SiraDBContext _dbContext=null;
+        private readonly SiraDBContext _dbContext;
 
        public TaskRepos(SiraDBContext dbContext)
         {
-            this._dbContext = dbContext;
+            _dbContext = dbContext;
         }
-        public async Task Create(MyTask task)
+        public async Task<MyTask> CreateTask(MyTask task)
         {
-            _dbContext.Tasks.Add(task);
+          var response=  await _dbContext.Tasks.AddAsync(task);
              await _dbContext.SaveChangesAsync();
+            return response.Entity;
 
             //throw new NotImplementedException();
         }
 
         public async Task DeleteTask(MyTask task)
         {
-            _dbContext.Tasks.Remove(task);
-           await _dbContext.SaveChangesAsync();
+            if (task != null)
+            {
+                _dbContext.Tasks.Remove(task);
+                await _dbContext.SaveChangesAsync();
+            }
            // throw new NotImplementedException();
         }
 
@@ -52,14 +56,14 @@ namespace DemoJira.DataAccess.Repositories
             //throw new NotImplementedException();
         }
 
-        public async Task UpdateTask(MyTask task)
+        public async Task<MyTask> UpdateTask(MyTask task)
         {
-            var existingTask=_dbContext.Tasks.FirstOrDefault(t => t.TaskId == task.TaskId);
+            var existingTask=await _dbContext.Tasks.FirstOrDefaultAsync(t => t.TaskId == task.TaskId);
             if(existingTask != null)
             {
                 existingTask.TaskId = task.TaskId;
                 existingTask.Title = task.Title;
-                existingTask.CurStatus = task.CurStatus;
+                existingTask.status = task.status   ;
                 existingTask.Area = task.Area;
                 existingTask.Iteration  = task.Iteration;
                 existingTask.ExpStartDate = task.ExpStartDate;
@@ -68,8 +72,10 @@ namespace DemoJira.DataAccess.Repositories
                 existingTask.desp = task.desp;
                 existingTask.Description= task.Description;
                 existingTask.Priority   = task.Priority;
-              await  _dbContext.SaveChangesAsync();
+             
             }
+            await _dbContext.SaveChangesAsync();
+            return existingTask;
            // throw new NotImplementedException();
         }
     }

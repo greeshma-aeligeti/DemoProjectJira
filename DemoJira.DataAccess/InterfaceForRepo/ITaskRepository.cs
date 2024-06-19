@@ -9,10 +9,10 @@ namespace DemoJira.DataAccess.InterfaceForRepo
 {
     public interface ITaskRepository
     {
-        Task Create(MyTask task);
+        Task<MyTask> CreateTask(MyTask task);
         Task<IEnumerable< MyTask>> GetAllTasks();
         Task<MyTask> GetTaskById(int id);
-        Task UpdateTask(MyTask task);
+        Task<MyTask> UpdateTask(MyTask task);
         Task DeleteTask(MyTask task);
     }
 }

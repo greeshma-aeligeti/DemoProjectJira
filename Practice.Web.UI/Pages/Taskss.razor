@@ -1,0 +1,49 @@
+﻿
+@page "/tasks"
+@inject TaskAPIService TaskService
+<h3>Taskss</h3>
+
+
+@if (tasks == null)
+{
+    <p><em>.............Loading...</em></p>
+}
+else
+{
+    <ul>
+        @foreach (var task in tasks)
+        {
+            <li>@task.Title</li>
+        }
+    </ul>
+}
+
+
+
+@code {
+    private IEnumerable<TaskDTO> tasks;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            if(TaskService==null){
+                Console.WriteLine("Tasks service is null");
+                return;
+            }
+            var tasksList = (await TaskService.GetTasksAsync());
+            if(tasksList!=null){
+                tasks = tasksList;
+            }
+            else{
+                Console.WriteLine("Tasks service returned null");
+
+            }
+        }
+        catch(Exception ex){
+            Console.WriteLine(ex.Message);
+            throw;
+        }
+    }
+}
+}
