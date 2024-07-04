@@ -1,0 +1,128 @@
+﻿@page "/LinkTask/{fromId:int}"
+@using System.Diagnostics
+
+@inject RelationAPIService relationService
+@inject TaskAPIService TaskService
+@using Microsoft.EntityFrameworkCore.Metadata.Internal
+
+<Alert @ref="alert" Color="Color.Success">Task Linked Successfully   <CloseButton /></Alert>
+<Alert @ref="failAlert" Color="Color.Danger">Link already exists  <CloseButton /> </Alert>
+<Alert @ref="addTask" Color="Color.Danger">Select Task <i class="bi bi-exclamation-triangle"></i>    <CloseButton /> </Alert>
+
+<EditForm Model="relation" OnValidSubmit="HandleValidSubmit">
+    <Forms.DataAnnotationsValidator/>
+    <div class="px-2 container">
+        <h3>Add Link</h3>
+
+        <div class="row">
+
+            <label for="rel" class="fw-bold">Relation</label>
+            <InputSelect id="rel" class="form-control m-2 ms-2" @bind-Value="relation.relation">
+                <option value="Child">Child</option>
+                <option value="Parent">Parent</option>
+                <option value="Related">Related to</option>
+            </InputSelect>
+        </div>
+
+        <div class="d-flex flex-row row">
+            <div class="col-6">
+                <label for="t2" class="fw-bold">Task1</label>
+                <InputSelect class="form-control" id="t2" @bind-Value="relation.TaskId1">
+                    @foreach (var t in tasks)
+                    {
+                        if (t.Id == fromId)
+                        {
+                            <option value="@t.Id">@t.Title (@t.HexaId)</option>
+                        }
+                        
+                    }
+
+                </InputSelect>
+            </div>
+        <div class="col-6">
+            <label for="t2" class="fw-bold">Task2</label>
+            <InputSelect class="form-control" id="t2" @bind-Value="relation.TaskId2">
+                <option hidden>Select Task</option>
+                @foreach (var t in tasks)
+                {
+                    if (t.Id == fromId)
+                    {
+                        continue;
+                    }
+                    <option value="@t.Id">@t.Title (@t.HexaId)</option>
+                }
+
+            </InputSelect>
+            </div>
+    </div>
+
+        
+    <button type="submit" class=" m-3 btn btn-primary">Create Link</button>
+
+
+    </div>
+</EditForm>
+
+@code {
+
+    [Parameter]
+    public int fromId{ get; set; }
+
+    public TaskDTO Task1 = new TaskDTO();
+    public List<TaskDTO> tasks = new List<TaskDTO>();
+    private RelationDTO relation = new RelationDTO();
+    private List<RelationDTO> AllRelations = new List<RelationDTO>();
+    Alert alert;
+    Alert failAlert;
+    Alert addTask;
+
+    protected override async void OnInitialized()
+    {
+        Task1 = await TaskService.GetTaskByID(fromId);
+        var taskList = await TaskService.GetTasksAsync();
+        tasks = taskList.ToList();
+        relation.TaskId2 = 0;
+        // base.OnInitialized();
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        relation.TaskId1 = fromId;
+
+        AllRelations = (await relationService.GetAllRelations()).ToList();
+        if (relation.TaskId2 == 0)
+        {
+            addTask.Show();
+            return;
+        }
+        foreach(var rel in AllRelations)
+        {
+            if((rel.TaskId1==fromId && rel.TaskId2 == relation.TaskId2) ||(rel.TaskId1==relation.TaskId2 && rel.TaskId2==fromId)  )
+            {
+
+                failAlert.Show();
+                relation.relation = "";
+
+                return;
+
+            }
+        }
+       
+
+        var res = await relationService.CreateRelationAsync(relation);
+        StateHasChanged();
+        if (res!=null)
+        {
+            alert.Show();
+
+        }
+        else
+        {
+            failAlert.Show();
+        }
+
+        relation.relation = "";
+
+    }
+
+}

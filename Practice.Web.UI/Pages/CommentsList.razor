@@ -1,0 +1,45 @@
+﻿@page "/comments/{TaskId:int}"
+@inject CommentAPIService CommentService
+@inject UserAPIService UserService
+
+<div class="comments-list">
+    <i class="bi bi-bootstrap-reboot" @onclick="Reload"></i>
+    @foreach (var comment in Comments)
+    {
+        foreach(var u  in Users)
+        {
+            if (comment.UserId == u.UserId && comment.TaskId==TaskId)
+            {
+                Username = u.UserName;
+            }
+        }
+
+        <CommentBox  
+            Id="@comment.CommentId" 
+            Username="@Username" 
+            Content="@comment.Content" 
+            CreatedAt="@comment.CreatedAt" />
+    }
+</div>
+
+@code {
+    [Parameter]
+    public int TaskId { get; set; }
+
+    public string Username{ get; set; }
+    List<CommentDTO> Comments = new List<CommentDTO>();
+    List<UserDTO> Users = new List<UserDTO>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        Comments = (await CommentService.GetCommentsAsyncByTID(TaskId)).ToList();
+        Users = (await UserService.GetAllUsersAsync()).ToList();
+    }
+   
+    private async Task Reload()
+    {
+        Comments = (await CommentService.GetCommentsAsyncByTID(TaskId)).ToList();
+        StateHasChanged();
+
+    }
+}

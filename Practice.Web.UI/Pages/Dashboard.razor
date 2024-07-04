@@ -1,0 +1,85 @@
+﻿@page "/dashboard"
+@inject TaskAPIService TaskService
+
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-4" >
+            <div class="card mb-3">
+                <div class="card-header bg-primary text-white">
+                    New Tasks
+                </div>
+                <div class="card-body">
+                    @foreach (var task in newTasks)
+                    {
+                        <div class="card mb-2">
+                            <div class="card-body">
+                                <h5 class="card-title">@task.Title</h5>
+                                <p class="card-text">@task.Description</p>
+                                <p class="card-text"><small class="text-muted">@task.StartDate.ToString("g")</small></p>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4" >
+            <div class="card mb-3">
+                <div class="card-header bg-warning text-dark">
+                    In-Progress Tasks
+                </div>
+                <div class="card-body">
+                    @foreach (var task in inProgressTasks)
+                    {
+                        <div class="card mb-2">
+                            <div class="card-body">
+                                <h5 class="card-title">@task.Title</h5>
+                                <p class="card-text">@task.Description</p>
+                                <p class="card-text"><small class="text-muted">@task.StartDate.ToString("g")</small></p>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card mb-3">
+                <div class="card-header bg-success text-dark">
+                    Completed Tasks
+                </div>
+                <div class="card-body">
+                    @foreach (var task in completedTasks)
+                    {
+                        <div class="card mb-2">
+                            <div class="card-body">
+                                <h5 class="card-title">@task.Title</h5>
+                                <p class="card-text">@task.Description</p>
+                                <p class="card-text"><small class="text-muted">@task.StartDate.ToString("g")</small></p>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Add more columns/cards for other task statuses similarly -->
+
+    </div>
+</div>
+
+@code {
+    private List<TaskDTO> newTasks = new List<TaskDTO>();
+    private List<TaskDTO> inProgressTasks = new List<TaskDTO>();
+    private List<TaskDTO> completedTasks = new List<TaskDTO>();
+    // Add more lists for other statuses
+
+    protected override async Task OnInitializedAsync()
+    {
+        var tasks = await TaskService.GetTasksAsync();
+
+        newTasks = tasks.Where(t => t.StatusId == "New").ToList();
+        inProgressTasks = tasks.Where(t => t.StatusId == "In-Progress").ToList();
+        completedTasks = tasks.Where(t => t.StatusId == "Closed").ToList();
+        // Populate other status lists similarly
+    }
+}

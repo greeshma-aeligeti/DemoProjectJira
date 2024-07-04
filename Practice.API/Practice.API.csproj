@@ -26,7 +26,6 @@
   <ItemGroup>
     <ProjectReference Include="..\DemoJira.Bussiness\DemoJira.Bussiness.csproj" />
     <ProjectReference Include="..\DemoJira.DataAccess\DemoJira.DataAccess.csproj" />
-    <ProjectReference Include="..\Practice.Web.UI\Practice.Web.UI.csproj" />
   </ItemGroup>
 
 </Project>

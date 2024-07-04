@@ -1,7 +1,12 @@
 ﻿
-@page "/tasks"
+@page "/"
+@using System.Diagnostics
 @inject TaskAPIService TaskService
-<h3>Taskss</h3>
+@inject UserAPIService UserService
+@inject NavigationManager Navigation
+
+
+<h3>List of Tasks</h3>
 
 
 @if (tasks == null)
@@ -10,21 +15,151 @@
 }
 else
 {
-    <ul>
+   @*  <ul>
+       
         @foreach (var task in tasks)
         {
+            <h1>@task.Id</h1>
             <li>@task.Title</li>
+            <li>@task.CurStatus</li>
+            <li>@task.Description</li>
+
+
         }
-    </ul>
-}
+    </ul> *@
+
+
+  
 
 
 
-@code {
+
+
+    <Alert @ref="alert" Color="Color.Success" >Task Deleted Successfully   <CloseButton/></Alert>
+    <Alert @ref="failAlert" Color="Color.Danger">Deletion failed</Alert>
+
+    <Table class="table table-striped-columns">
+        <TableHeader>
+            <TableRow>
+                <TableHeaderCell>Id</TableHeaderCell>
+                <TableHeaderCell>Name</TableHeaderCell>
+                <TableHeaderCell>Type</TableHeaderCell>
+                <TableHeaderCell>Description</TableHeaderCell>
+                <TableHeaderCell>User</TableHeaderCell>
+                <TableHeaderCell> Status</TableHeaderCell>
+                <TableHeaderCell>Priority</TableHeaderCell>
+                <TableHeaderCell>Project</TableHeaderCell>
+                <TableHeaderCell>Iteration</TableHeaderCell>
+                <TableHeaderCell>Actions</TableHeaderCell>
+
+            </TableRow>
+        </TableHeader>
+        <TableBody>
+            @foreach (var task in tasks)
+            {
+                <TableRow>
+                    <TableRowCell>@task.HexaId</TableRowCell>
+                     <TableRowCell>@task.Title</TableRowCell>
+                     <TableRowCell>@task.Type</TableRowCell>
+                     <TableRowCell>@task.Description</TableRowCell>
+
+                    @foreach(var u in users)
+                    {
+                        if (task.UserId == u.UserId)
+                        {
+                            <TableRowCell>@u.UserName</TableRowCell>
+                        }
+                    }
+                  
+
+                    <TableRowCell>@task.StatusId</TableRowCell>
+
+                        <TableRowCell>@task.Priority</TableRowCell>
+                    @* <td>@task.ProjectId</td>*@
+                    @foreach(var p in proj)
+                    {
+                        if (p.Id == task.ProjectId)
+                        {
+                            <TableRowCell>@p.Name</TableRowCell>
+                        }
+                    }
+                    @foreach(var i in itrs)
+                    {
+                        if(i.Id==task.IterationId && i.projID == task.ProjectId)
+                        {
+                            <TableRowCell>@i.Name</TableRowCell>
+                        }
+                    }
+
+                    <TableRowCell >
+
+                      <a  @onclick="()=>DeleteTask(task.Id)"><i class="bi bi-trash"></i></a>
+                        <a  @onclick="()=>UpdateTask(task.Id)"><i class="bi p-2 bi-pencil"></i></a>
+                        <a @onclick="()=>LinkTask(task.Id)"><i class=" bi bi-link"></i></a>
+
+                  </TableRowCell>
+                    
+
+                </TableRow>
+            }
+        </TableBody>
+    </Table>
+
+
+
+
+
+    @code {
     private IEnumerable<TaskDTO> tasks;
+    private ProjectDTO[] proj;
+    private UserDTO[] users;
+    /// <summary>
+    ///private AlertMessage Alert;
+    /// </summary>
+    // public List<TaskDTO> GridData { get; set; }
+    private IterationDTO[] itrs;
+    Alert alert;
+    Alert failAlert;
+
+    private async Task DeleteTask(int id)
+    {
+
+        var res=  await TaskService.DeleteTaskApi(id);
+        if (res)
+        {
+            alert.Show();
+            await Reload();
+
+        }
+        else
+        {
+            failAlert.Show();
+            await Reload();
+        }
+
+
+    }
+
+    private async Task UpdateTask(int id)
+    {
+        Navigation.NavigateTo($"/updatetask/{id}");
+
+    }
+    private async Task LinkTask(int id)
+    {
+        Navigation.NavigateTo($"/LinkTask/{id}");
+    }
+    private async Task Reload()
+    {
+        tasks = await TaskService.GetTasksAsync();
+        StateHasChanged();
+
+    }
+
 
     protected override async Task OnInitializedAsync()
     {
+
         try
         {
             if(TaskService==null){
@@ -32,8 +167,13 @@ else
                 return;
             }
             var tasksList = (await TaskService.GetTasksAsync());
+
+            Console.WriteLine(tasksList);
             if(tasksList!=null){
-                tasks = tasksList;
+                tasks = tasksList.ToList();
+                proj = (await TaskService.GetAllProjectsAsync()).ToArray();
+                itrs = (await TaskService.GetAllIterations()).ToArray();
+                users = (await UserService.GetAllUsersAsync()).ToArray();
             }
             else{
                 Console.WriteLine("Tasks service returned null");
@@ -44,6 +184,8 @@ else
             Console.WriteLine(ex.Message);
             throw;
         }
+
+        //GridData = tasks;
     }
 }
 }

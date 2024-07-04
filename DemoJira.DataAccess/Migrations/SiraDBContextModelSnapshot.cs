@@ -22,44 +22,57 @@ namespace DemoJira.DataAccess.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("DemoJira.DataAccess.Entities.Description", b =>
+            modelBuilder.Entity("DemoJira.DataAccess.Entities.Comment", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<int>("CommentId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("CommentId"));
 
-                    b.Property<string>("DespContent")
+                    b.Property<string>("Content")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("IterationId")
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("TaskId")
                         .HasColumnType("int");
 
-                    b.HasKey("Id");
+                    b.Property<int>("userId")
+                        .HasColumnType("int");
 
-                    b.ToTable("Descriptions");
+                    b.HasKey("CommentId");
+
+                    b.HasIndex("TaskId");
+
+                    b.HasIndex("userId");
+
+                    b.ToTable("Comments");
                 });
 
             modelBuilder.Entity("DemoJira.DataAccess.Entities.Iteration", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<int>("IterationId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("IterationId"));
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("ProjectId")
+                    b.Property<int>("ProjId")
                         .HasColumnType("int");
 
-                    b.HasKey("Id");
+                    b.Property<int>("ProjectEntityId")
+                        .HasColumnType("int");
 
-                    b.HasIndex("ProjectId");
+                    b.HasKey("IterationId");
+
+                    b.HasIndex("ProjectEntityId");
 
                     b.ToTable("Iterations");
                 });
@@ -72,17 +85,35 @@ namespace DemoJira.DataAccess.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("TaskId"));
 
+                    b.Property<DateTime>("ActEndDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("ActStartDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime>("ExpEndDate")
                         .HasColumnType("datetime2");
 
                     b.Property<DateTime>("ExpStartDate")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("HexId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int>("IterationId")
                         .HasColumnType("int");
 
-                    b.Property<int>("Priority")
+                    b.Property<int>("MyUserId")
                         .HasColumnType("int");
+
+                    b.Property<string>("Priority")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("ProjectId")
                         .HasColumnType("int");
@@ -92,8 +123,9 @@ namespace DemoJira.DataAccess.Migrations
                         .HasMaxLength(40)
                         .HasColumnType("nvarchar(40)");
 
-                    b.Property<int>("desp")
-                        .HasColumnType("int");
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("status")
                         .IsRequired()
@@ -103,9 +135,9 @@ namespace DemoJira.DataAccess.Migrations
 
                     b.HasIndex("IterationId");
 
-                    b.HasIndex("ProjectId");
+                    b.HasIndex("MyUserId");
 
-                    b.HasIndex("desp");
+                    b.HasIndex("ProjectId");
 
                     b.ToTable("Tasks");
                 });
@@ -127,7 +159,30 @@ namespace DemoJira.DataAccess.Migrations
                     b.ToTable("Areas");
                 });
 
-            modelBuilder.Entity("DemoJira.DataAccess.Entities.Status", b =>
+            modelBuilder.Entity("DemoJira.DataAccess.Entities.TasksRelation", b =>
+                {
+                    b.Property<int>("RelationId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("RelationId"));
+
+                    b.Property<int>("TaskId1")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TaskId2")
+                        .HasColumnType("int");
+
+                    b.Property<string>("relation")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("RelationId");
+
+                    b.ToTable("Relations");
+                });
+
+            modelBuilder.Entity("DemoJira.DataAccess.Entities.User", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -135,47 +190,75 @@ namespace DemoJira.DataAccess.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("StatusName")
+                    b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
-                    b.ToTable("Statuses");
+                    b.ToTable("NewUsers");
+                });
+
+            modelBuilder.Entity("DemoJira.DataAccess.Entities.Comment", b =>
+                {
+                    b.HasOne("DemoJira.DataAccess.Entities.MyTask", "Task")
+                        .WithMany("Comments")
+                        .HasForeignKey("TaskId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("DemoJira.DataAccess.Entities.User", "CmntUser")
+                        .WithMany()
+                        .HasForeignKey("userId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("CmntUser");
+
+                    b.Navigation("Task");
                 });
 
             modelBuilder.Entity("DemoJira.DataAccess.Entities.Iteration", b =>
                 {
-                    b.HasOne("DemoJira.DataAccess.Entities.Project", null)
+                    b.HasOne("DemoJira.DataAccess.Entities.Project", "ProjectEntity")
                         .WithMany("Iterations")
-                        .HasForeignKey("ProjectId");
+                        .HasForeignKey("ProjectEntityId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ProjectEntity");
                 });
 
             modelBuilder.Entity("DemoJira.DataAccess.Entities.MyTask", b =>
                 {
-                    b.HasOne("DemoJira.DataAccess.Entities.Iteration", "Iteration")
+                    b.HasOne("DemoJira.DataAccess.Entities.Iteration", "Iterations")
                         .WithMany()
                         .HasForeignKey("IterationId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("DemoJira.DataAccess.Entities.Project", "Area")
+                    b.HasOne("DemoJira.DataAccess.Entities.User", "MyUser")
+                        .WithMany()
+                        .HasForeignKey("MyUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("DemoJira.DataAccess.Entities.Project", "Areas")
                         .WithMany()
                         .HasForeignKey("ProjectId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("DemoJira.DataAccess.Entities.Description", "Description")
-                        .WithMany()
-                        .HasForeignKey("desp")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                    b.Navigation("Areas");
 
-                    b.Navigation("Area");
+                    b.Navigation("Iterations");
 
-                    b.Navigation("Description");
+                    b.Navigation("MyUser");
+                });
 
-                    b.Navigation("Iteration");
+            modelBuilder.Entity("DemoJira.DataAccess.Entities.MyTask", b =>
+                {
+                    b.Navigation("Comments");
                 });
 
             modelBuilder.Entity("DemoJira.DataAccess.Entities.Project", b =>

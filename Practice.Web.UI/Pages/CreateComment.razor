@@ -1,0 +1,139 @@
+﻿@page "/Comment"
+@inject CommentAPIService CmtApiService
+
+@inject UserAPIService UserService
+
+<div>
+<div class="accordion m-3">
+    <div class="accordion-item p-3">
+        <div class="accordion-header" @onclick="ToggleAccordion">
+            Add Comment
+        </div>
+        @if (isAccordionOpen)
+        {
+            <div class="accordion-body">
+                <div class="comment-section">
+                    
+                    <textarea class="form-control " @bind="Cont" placeholder="Enter your comment..."></textarea>
+                    <div class="d-flex flex-row-reverse bd-highlight p-3">
+                        <button class="btn btn-primary me-1 p-2 bd-highlight" @onclick="HandleValidSubmit">Save</button>&nbsp
+                        <button class="btn btn-secondary p-2 bd-highlight" @onclick="CancelComment">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        }
+       
+        
+            <Alert @ref="flag" Color="Color.Success"> Added comment</Alert>
+        
+    </div>
+</div>
+
+    <div class="comments-list">
+        
+        @foreach (CommentDTO comment in Comments)
+        {
+
+        Username = GetUsername(comment);
+        <CommentBox Id="@comment.CommentId"
+                        Username="@Username"
+                        UserId="@UserId"
+                        Content="@comment.Content"
+                        TaskId="@TaskId"
+                        Comments="@Comments"
+                        CreatedAt="@comment.CreatedAt" />
+        }
+        
+    </div>
+
+
+</div>
+
+@code {
+    /// <summary>
+    ///  [Parameter]
+    /// </summary>
+    // public int TaskId { get; set; }
+    [Parameter]
+    public int TaskId{ get; set; }
+    [Parameter]
+    public int UserId{ get; set; }
+    public string Cont;
+    Alert flag;
+    private CommentDTO comment1;
+    // private IEnumerable<CommentDTO> Comments;
+
+    public string Username { get; set; }
+    List<CommentDTO> Comments = new List<CommentDTO>();
+    List<UserDTO> Users = new List<UserDTO>();
+
+    protected override async void OnInitialized()
+    {
+        //comment.TaskId = TaskId;
+        Comments = (await CmtApiService.GetCommentsAsyncByTID(TaskId)).ToList();
+        Users = (await UserService.GetAllUsersAsync()).ToList();
+
+
+    }
+    public  string GetUsername(CommentDTO comment)
+    {
+        foreach (var u in Users)
+        {
+            if (comment.UserId == u.UserId && comment.TaskId == TaskId)
+            {
+                Username = u.UserName;
+            }
+        }
+        return Username;
+
+    }
+    private async Task HandleValidSubmit()
+    {
+        comment1 = new CommentDTO
+            {
+                Content = Cont,
+                TaskId = TaskId,
+                UserId = UserId,
+                CreatedAt = DateTime.Now
+    };
+        flag.Show();
+        var cmt =await CmtApiService.CreateComment(comment1);
+        Cont = string.Empty;
+        await Task.Delay(2000);
+        flag.Toggle();
+        Reload();
+        StateHasChanged();
+       // Reload();
+
+    }
+   
+    private void HandleCancel()
+    {
+        // Handle cancel action
+        // You can navigate to another page or clear the form
+    }
+    private bool isAccordionOpen = false;
+   // private string Comment { get; set; } = string.Empty;
+    private async Task Reload()
+    {
+        Comments = (await CmtApiService.GetCommentsAsyncByTID(TaskId)).ToList();
+        StateHasChanged();
+
+    }
+    private void ToggleAccordion()
+    {
+        isAccordionOpen = !isAccordionOpen;
+    }
+
+    private void SaveComment()
+    {
+        // Implement save logic here
+        Console.WriteLine($"Comment saved: {comment1.Content}");
+    }
+
+    private void CancelComment()
+    {
+        // Clear the comment
+        
+    }
+}

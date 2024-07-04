@@ -1,4 +1,5 @@
 
+using DemoJira.Bussiness.APIServices;
 using DemoJira.Bussiness.DTO;
 using DemoJira.Bussiness.ServiceInterface;
 using DemoJira.Bussiness.Services;
@@ -20,7 +21,8 @@ namespace Practice.API
 
             // Add services to the container.
 
-           // builder.Services.AddControllers();
+            // builder.Services.AddControllers();
+
             builder.Services.AddControllersWithViews();
             builder.Services.AddRazorPages();
 
@@ -30,6 +32,9 @@ namespace Practice.API
                         {
                             options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
                             options.JsonSerializerOptions.WriteIndented = true;
+                            options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.Preserve;
+                            options.JsonSerializerOptions.DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull;
+
                         });
 
                 // Other configurations and services
@@ -40,13 +45,45 @@ namespace Practice.API
             builder.Services.AddSwaggerGen();
             builder.Services.AddScoped<ITaskService, TaskService>();
             builder.Services.AddScoped<ITaskRepository, TaskRepos>();
-            builder.Services.AddScoped<MyTask>();
-            builder.Services.AddScoped<TaskDTO>();
+            //builder.Services.AddScoped<MyTask>();
+            builder.Services.AddScoped<TaskAPIService>();
+            builder.Services.AddTransient<UserAPIService>();
+          //  builder.Services.AddScoped<User>();
+          builder.Services.AddScoped<IRelationRepos,RelationRepos>();
+            builder.Services.AddScoped<IRelationService, RelationService>();
+            builder.Services.AddScoped<RelationAPIService>();
+            builder.Services.AddTransient<IUserService,UserService>();
+            builder.Services.AddScoped<IUserRepository,UserRepos>();
+            builder.Services.AddScoped<CommentAPIService>();
+            builder.Services.AddScoped<ICommentRepos,CommentRepos>();
+            builder.Services.AddScoped<ICommentService,CommentService>();
+            builder.Services.AddScoped<IIdGeneratorService,IDGeneratorService>();
+           // builder.Services.AddTransient<IUserService>();
             builder.Services.AddAutoMapper(typeof(TaskController));
-            builder.Services.AddHttpClient<ITaskService, TaskService>(client =>
+            /*    builder.Services.AddHttpClient<ITaskService, TaskService>(client =>
+                {
+                    client.BaseAddress = new Uri("http://localhost:5011");
+                });*/
+            builder.Services.AddHttpContextAccessor();
+
+            builder.Services.AddScoped(sp =>
+        new HttpClient
+        {
+            BaseAddress = new Uri("https://localhost:5120")
+        });
+            //builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
+            builder.Services.AddCors(options =>
             {
-                client.BaseAddress = new Uri("https://localhost:44353");
+                options.AddDefaultPolicy(policy =>
+                {
+                    policy.WithOrigins("https://localhost:5120") // Your Blazor app URL
+                          .AllowAnyHeader()
+                          .AllowAnyMethod()
+                          .AllowAnyOrigin();
+                });
             });
+
+         
             builder.Services.AddScoped<SiraDBContext>();
             var app = builder.Build();
 
@@ -63,15 +100,15 @@ namespace Practice.API
          
 
             app.UseHttpsRedirection();
-
+            app.UseCors();
             app.UseAuthorization();
             app.UseBlazorFrameworkFiles();
-
+            app.UseRouting();
             app.UseStaticFiles();
 
             app.MapRazorPages();
             app.MapControllers();
-            app.MapFallbackToFile("index.html");
+           // app.MapFallbackToFile("index.html");
 
             app.Run();
         }

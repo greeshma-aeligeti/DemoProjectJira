@@ -4,12 +4,38 @@
 
 .top-row {
     height: 3.5rem;
-    background-color: rgba(0,0,0,0.4);
+    background-color: 
+    rgb(128, 32, 24);
 }
 
 .navbar-brand {
     font-size: 1.1rem;
 }
+
+.comment {
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+}
+
+.comment-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 5px;
+}
+
+.comment-user {
+    font-weight: bold;
+}
+
+.comment-date {
+    color: gray;
+    font-size: 0.8em;
+}
+
+.comment-content {
+    margin-top: 5px;
+}
+
 
 .bi {
     display: inline-block;

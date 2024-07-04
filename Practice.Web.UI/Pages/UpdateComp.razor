@@ -1,0 +1,278 @@
+﻿@page "/updatetask/{taskId:int}"
+@inject TaskAPIService TaskService
+@inject NavigationManager Navigation
+@using Microsoft.EntityFrameworkCore.Metadata.Internal
+@using System.Net.Http.Headers;
+@inject UserAPIService UserService
+<h3>Update Task</h3>
+
+<EditForm Model="task" OnValidSubmit="HandleValidSubmit">
+    
+       <DataAnnotationsValidator />
+       <Forms.ValidationSummary></Forms.ValidationSummary>
+    
+    @if (flag == true)
+    {
+        <PopUp></PopUp>
+    }
+    <div class="p-3 container">
+<div class="d-flex flex-row p-3 row">
+            
+            <div class=" col-12">
+
+            <label for="title" class="fw-bold">Title</label>
+            <InputText id="title" @bind-Value="task.Title" class="form-control" />
+            <ValidationMessage For="@(()=>task.Title)"/>
+        </div>
+        <div class="col-12"></div>
+      <br/>
+       
+        <div class=" col-12">
+        @* <FluentTextField @bind-Value="task.Title" Label="Title"></FluentTextField> *@
+
+
+            <label for="description" class="fw-bold">Description</label>
+        <InputTextArea id="description" @bind-Value="task.Description" class="form-control" />
+     @*    <FluentTextArea @bind-Value="task.Description"  Label="Description" /> *@
+    </div>
+            <div class="col-12"></div>
+
+    <br/>
+
+        <div class=" col-12 ">
+
+            <label for=" user" class="fw-bold">Assign User</label>
+            <InputSelect id="user" @bind-Value="task.UserId" class="form-control">
+                <option hidden value="">Select a User</option>
+                @foreach (UserDTO p in users)
+                {
+                    
+                    <option value="@p.UserId" class="d-flex flex-row align-items-center" >
+
+                            <img src="https://via.placeholder.com/20" alt="icon" style="width: 20px; height: 20px; margin-right: 8px;" />
+
+                        @p.UserName</option>
+                }
+
+            </InputSelect>
+
+        </div>
+        </div>
+
+        <div class=" d-flex flex-row p-3 mb-2 row">
+
+   @*       <FluentCalendar @bind-Value="task.StartDate"
+                   
+                        SelectMode="CalendarSelectMode.Single" /> *@
+
+           
+            <div class=" col-4">
+                <label class="fw-bold" for="priority">Priority</label>
+                <br />
+
+                <InputSelect class="form-control" id="priority" @bind-Value="task.Priority">
+                    <option hidden value="">Choose Priority</option>
+                    <option value="High"> High</option>
+                    <option value="Medium">Medium</option>
+                    <option value="Low">Low</option>
+
+                </InputSelect>
+                <ValidationMessage For="@(()=>task.Type)" />
+
+   </div>
+            <div class="col-4 ">
+                <label for="status" class="fw-bold">Status</label>
+                @* <InputText id="status" @bind-Value="task.CurStatus" class="form-control" /> *@
+
+                <InputSelect id="status" @bind-Value="task.StatusId" class="form-control">
+                    <option hidden value="">Select Status</option>
+                    <option value="New">New</option>
+                    <option value="In-Progress" >In-Progress</option>
+                    <option value="Resolved" >Resolved</option>
+                    <option value="Review">Review</option>
+                    <option value="Closed" >Closed</option>
+
+                </InputSelect>
+                <ValidationMessage For="@(()=>task.StatusId)" />
+
+
+            </div>
+   </div>
+   <div class=" d-flex flex-row row m-2">
+            <div class="col-4 ">
+            <label for="startDate" class="fw-bold">Start Date</label>
+        <InputDate id="startDate" @bind-Value="task.StartDate" class="form-control" />
+                <ValidationMessage For="@(()=>task.StartDate)" />
+
+    </div>
+
+
+
+
+            <div class="col-4 ">
+            <label for="endDate" class="fw-bold">End Date</label>
+        <InputDate id="endDate" @bind-Value="task.EndDate" class="form-control" />
+                <ValidationMessage For="@(()=>task.EndDate)" />
+
+    </div>
+        </div>
+        <div class=" d-flex flex-row row m-2">
+            <div class="col-4 ">
+                <label for="acstartDate" class="fw-bold">Actual Start Date</label>
+                <InputDate id="acstartDate" @bind-Value="task.ActStartDate" class="form-control" />
+                <ValidationMessage For="@(()=>task.ActStartDate)" />
+
+            </div>
+
+
+
+
+            <div class="col-4 ">
+                <label for="acendDate" class="fw-bold">Actual End Date</label>
+                <InputDate id="acendDate" @bind-Value="task.ActEndDate" class="form-control" />
+                <ValidationMessage For="@(()=>task.ActEndDate)" />
+
+            </div>
+        </div>
+
+
+        <div class="m-3 ">
+
+
+            <label for=" project" class="fw-bold">Project/Area</label>
+            <InputSelect id="project"  @bind-Value="task.ProjectId" class="form-control" >
+                <option hidden value="">Select project</option>
+                @foreach(ProjectDTO p in proj)
+                {
+                    <option value="@p.Id">@p.Name</option>
+                }
+              
+
+                
+                
+        </InputSelect>
+            <ValidationMessage For="@(() => task.ProjectId)" />
+    </div>
+
+        <div class="m-3 ">
+            <label for=" iteration" class="fw-bold">Iterations</label>
+        <InputSelect id="iteration" @bind-Value="task.IterationId"  class="form-control">
+            <option hidden value="">Select iteration</option>
+                @foreach(IterationDTO i in Itrs)
+                {
+                    if (i.projID == task.ProjectId)
+                    {
+                        <option value="@i.Id"
+                        >@i.Name
+                        </option>
+                       
+                    }
+                }
+            </InputSelect>
+            <ValidationMessage For="@(()=>task.IterationId)"/>
+    </div>
+@* 
+        <div class="m-3">
+            <label for="file" class="form-label fw-bold">Attachments <i class="bi bi-paperclip"></i></label><br/>
+            <InputFile id="file" OnChange="HandleFileSelected" />
+        </div>
+      
+ *@
+
+
+    @* <div>
+        <label for="assignedTo">Assign To:</label>
+        <select id="assignedTo" @bind="task.AssignedToUserId" class="form-control">
+            <option value="">Select a user</option>
+            @foreach (var user in users)
+            {
+                <option value="@user.UserId">@user.UserName</option>
+            }
+        </select>
+    </div> *@
+    <div class="m-3 row">
+        
+    <button type="submit" class="btn btn-primary col-3">Update Task</button></div>
+    <div class="align-items-center">
+    
+    @if (flag == true)
+    {
+        
+        <p class="row m-3 p-3 align-self-baseline bg-success rounded-2">Task Created Successfully</p>
+     
+    }
+    </div>
+    </div>
+</EditForm>
+
+<CreateComment TaskId="taskId" UserId="task.UserId"></CreateComment>
+
+@code {
+    [Parameter]
+    public int taskId { get; set; }
+
+    private TaskDTO task = new TaskDTO();
+    private List<ProjectDTO> proj = new List<ProjectDTO>();
+    private List<IterationDTO> Itrs = new List<IterationDTO>();
+    private List<IterationDTO> filtItrs = new List<IterationDTO>();
+    private string ItName = "";
+    private List<UserDTO> users = new List<UserDTO>();
+    private bool flag = false;
+    private IBrowserFile selectedFile;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        var proj1 = await TaskService.GetAllProjectsAsync();
+        proj = proj1.ToList();
+
+        var itr1 = await TaskService.GetAllIterations();
+        Itrs = itr1.ToList();
+
+        var users1 = await UserService.GetAllUsersAsync();
+        users = users1.ToList();
+        foreach (var i in Itrs)
+        {
+            if (i.projID == task.ProjectId)
+            {
+                filtItrs.Add(i);
+            }
+        }
+        task = await TaskService.GetTaskByID(taskId);
+        // Statuses = await TaskService.GetTasksAsync();
+    }
+
+
+    private void HandleFileSelected(InputFileChangeEventArgs e)
+    {
+        selectedFile = e.File;
+    }
+
+
+    private async Task HandleValidSubmit()
+    {/*
+    if (selectedFile != null)
+    {
+    var content = new MultipartFormDataContent();
+    var fileContent = new StreamContent(selectedFile.OpenReadStream());
+    fileContent.Headers.ContentType = new MediaTypeHeaderValue(selectedFile.ContentType);
+
+    content.Add(fileContent, "file", selectedFile.Name);
+
+    var (success, attachmentUrl) = await TaskService.UploadFile(task.Id, content);
+    if (success)
+    {
+        task.AttachmentUrl = attachmentUrl;
+    }
+    }*/
+
+        // await TaskService.UpdateTask(Task);
+        if (task.StatusId == "Closed")
+        {
+            task.ActEndDate = DateTime.Now;
+        }
+        await TaskService.UpdateTask(taskId,task);
+        StateHasChanged();
+        Navigation.NavigateTo("/");
+    }
+}

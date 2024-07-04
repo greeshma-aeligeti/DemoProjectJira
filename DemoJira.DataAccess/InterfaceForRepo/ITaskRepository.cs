@@ -14,5 +14,10 @@ namespace DemoJira.DataAccess.InterfaceForRepo
         Task<MyTask> GetTaskById(int id);
         Task<MyTask> UpdateTask(MyTask task);
         Task DeleteTask(MyTask task);
+        Task <Project> GetProjectById(int id);
+        Task<IEnumerable<Project>> GetAllProjs();
+        Task<IEnumerable<Iteration>> GetIterationAll();
+       /// Task<MyTask> AddAttachmentToTask(int taskId, Attachment attachment);
+
     }
 }

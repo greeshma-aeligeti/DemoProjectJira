@@ -36,6 +36,31 @@ a, .btn-link {
     color: red;
 }
 
+.comment {
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+}
+
+.comment-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 5px;
+}
+
+.comment-user {
+    font-weight: bold;
+}
+
+.comment-date {
+    color: gray;
+    font-size: 0.8em;
+}
+
+.comment-content {
+    margin-top: 5px;
+}
+
+
 #blazor-error-ui {
     background: lightyellow;
     bottom: 0;
