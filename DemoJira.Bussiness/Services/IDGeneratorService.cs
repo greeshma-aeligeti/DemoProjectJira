@@ -1,5 +1,6 @@
 ﻿using DemoJira.Bussiness.ServiceInterface;
 using DemoJira.DataAccess;
+using DemoJira.Shared.Enums;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -20,9 +21,12 @@ namespace DemoJira.Bussiness.Services
 
         public async Task<string> GenerateNextIdAsync(string type)
         {
+
+            TaskType targetType = type == "Task" ? TaskType.Task : TaskType.Bug;
+
             string prefix = type == "Task" ? "TA" : "BG";
             string lastId = await _context.Tasks
-                .Where(t => t.Type == type)
+                .Where(t => t.Type == targetType)
                 .OrderByDescending(t => t.HexId)
                 .Select(t => t.HexId)
                 .FirstOrDefaultAsync();

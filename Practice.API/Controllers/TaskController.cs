@@ -92,7 +92,7 @@ namespace Practice.API.Controllers
         [Route("CreateTask")]
         public async Task<ActionResult<TaskDTO>> CreateTask([FromBody] TaskDTO taskDTO)
         {
-            taskDTO.HexaId = await _idGeneratorService.GenerateNextIdAsync(taskDTO.Type);
+            taskDTO.HexaId = await _idGeneratorService.GenerateNextIdAsync(taskDTO.Type.ToString());
 
 
 

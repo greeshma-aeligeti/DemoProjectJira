@@ -4,6 +4,7 @@ using DemoJira.DataAccess;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DemoJira.DataAccess.Migrations
 {
     [DbContext(typeof(SiraDBContext))]
-    partial class SiraDBContextModelSnapshot : ModelSnapshot
+    [Migration("20240708100213_itr")]
+    partial class itr
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -67,9 +70,12 @@ namespace DemoJira.DataAccess.Migrations
                     b.Property<int>("ProjId")
                         .HasColumnType("int");
 
+                    b.Property<int?>("ProjectId")
+                        .HasColumnType("int");
+
                     b.HasKey("IterationId");
 
-                    b.HasIndex("ProjId");
+                    b.HasIndex("ProjectId");
 
                     b.ToTable("Iterations");
                 });
@@ -115,9 +121,6 @@ namespace DemoJira.DataAccess.Migrations
                         .HasColumnType("int");
 
                     b.Property<int>("ProjectId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("StoryPoint")
                         .HasColumnType("int");
 
                     b.Property<int?>("TaskStatus")
@@ -220,13 +223,9 @@ namespace DemoJira.DataAccess.Migrations
 
             modelBuilder.Entity("DemoJira.DataAccess.Entities.Iteration", b =>
                 {
-                    b.HasOne("DemoJira.DataAccess.Entities.Project", "ProjectEntity")
+                    b.HasOne("DemoJira.DataAccess.Entities.Project", null)
                         .WithMany("Iterations")
-                        .HasForeignKey("ProjId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("ProjectEntity");
+                        .HasForeignKey("ProjectId");
                 });
 
             modelBuilder.Entity("DemoJira.DataAccess.Entities.MyTask", b =>

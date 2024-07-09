@@ -20,6 +20,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\DemoJira.Bussiness\DemoJira.Bussiness.csproj" />
+    <ProjectReference Include="..\DemoJira.Shared\DemoJira.Shared.csproj" />
   </ItemGroup>
 
   <ItemGroup>

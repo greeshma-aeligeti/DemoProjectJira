@@ -16,8 +16,11 @@ namespace DemoJira.DataAccess.Entities
         public string Name { get; set; }
 
         //[DeleteBehavior(DeleteBehavior.NoAction)]
-        [ForeignKey(nameof(Project))]
+        
+        
         public int ProjId {  get; set; }
+
+        [ForeignKey(nameof(ProjId))]
         public Project ProjectEntity { get; set; }
 
     }

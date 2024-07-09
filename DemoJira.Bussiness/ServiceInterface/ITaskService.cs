@@ -18,8 +18,6 @@ namespace DemoJira.Bussiness.ServiceInterface
         Task <string> GetAttachmentUrl(int  Id);
         Task<ProjectDTO> GetProjectById(int Id);
         Task<IEnumerable<ProjectDTO>> GetAllProjects();
-       // Task<TaskDTO> AddAttachmentToTask(int taskId, Attachment attachment);
         Task<IEnumerable<IterationDTO>> GetAllIterations();
-     //   Task addRelation(TaskDTO t1, TaskDTO t2);
     }
 }

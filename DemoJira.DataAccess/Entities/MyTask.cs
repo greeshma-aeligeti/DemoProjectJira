@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DemoJira.Shared.Enums;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -17,28 +18,35 @@ namespace DemoJira.DataAccess.Entities
         [MaxLength(40)]
         public string Title { get; set; }
 
-     public string Type {  get; set; }
-        public string status {  get; set; }
+     public TaskType Type {  get; set; }
+        //public string status {  get; set; }
 
+        public MyTaskStatus? TaskStatus { get; set; }
+        public BugStatus? BugStatus { get; set; }
 
-        [ForeignKey(nameof(Project))]
+        public int StoryPoint {  get; set; }
+
        public int ProjectId {  get; set; }
+
+        [ForeignKey(nameof(ProjectId))]
         public Project Areas {  get; set; }
 
-        [ForeignKey(nameof(Iteration))]
         public int IterationId {  get; set; }
+
+        [ForeignKey(nameof(IterationId))]
         public Iteration Iterations {  get; set; }
 
         public string Description {  get; set; }
 
-       public string Priority {  get; set; }
+       public PriorityLevel Priority {  get; set; }
         public DateTime ExpStartDate { get; set; }
         public DateTime ExpEndDate { get; set; }
         public DateTime ActStartDate { get; set; }
         public DateTime ActEndDate { get; set; }
 
-        [ForeignKey(nameof(User))]
         public int MyUserId { get; set; }
+
+        [ForeignKey(nameof(MyUserId))]
         public User MyUser { get; set; }
 
    
@@ -47,6 +55,6 @@ namespace DemoJira.DataAccess.Entities
 
 
     }
-
+  
 
 }

@@ -31,7 +31,9 @@ namespace DemoJira.Bussiness.Services
             {
                 Title = taskDTO.Title,
                 Description = taskDTO.Description,
-                status = taskDTO.StatusId,
+                TaskStatus = taskDTO.TaskStatus,
+                BugStatus = taskDTO.BugStatus,
+                StoryPoint = taskDTO.StoryPoint,
                 Priority = taskDTO.Priority,
                 HexId = taskDTO.HexaId,
                 ProjectId = taskDTO.ProjectId,
@@ -72,8 +74,10 @@ namespace DemoJira.Bussiness.Services
                 Id=t.TaskId,
                 Title=t.Title,
                 HexaId=t.HexId,
-                StatusId=t.status,
+                TaskStatus = t.TaskStatus,
+                BugStatus = t.BugStatus,
                 Description=t.Description,
+                StoryPoint=t.StoryPoint,
                 Priority=t.Priority,
                 //AttachmentUrl=t.AttachmentUrl,
                 StartDate=t.ExpStartDate,
@@ -143,7 +147,9 @@ namespace DemoJira.Bussiness.Services
                 Id = Task.TaskId,
                 Title = Task.Title,
                 HexaId=Task.HexId,
-                StatusId=Task.status,
+                StoryPoint = Task.StoryPoint,
+                TaskStatus = Task.TaskStatus,
+                BugStatus = Task.BugStatus,
                 Description = Task.Description,
                 Priority=Task.Priority,
                // AttachmentUrl=Task.AttachmentUrl,
@@ -181,7 +187,9 @@ namespace DemoJira.Bussiness.Services
             existingTask.Description = taskDTO.Description;
             existingTask.ProjectId = taskDTO.ProjectId;
             existingTask.IterationId = taskDTO.IterationId;
-            existingTask.status = taskDTO.StatusId;
+            existingTask.TaskStatus = taskDTO.TaskStatus;
+            existingTask.StoryPoint = taskDTO.StoryPoint;
+            existingTask.BugStatus = taskDTO.BugStatus;
            // existingTask.AttachmentUrl = taskDTO.AttachmentUrl;
             existingTask.Priority = taskDTO.Priority;
             existingTask.ExpStartDate = taskDTO.StartDate;
@@ -251,9 +259,11 @@ namespace DemoJira.Bussiness.Services
                 Id = Task1.TaskId,
                 Title = Task1.Title,
                 HexaId = Task1.HexId,
-                StatusId = Task1.status,
+                TaskStatus = Task1.TaskStatus,
+                BugStatus   = Task1.BugStatus,
                 Description = Task1.Description,
                 Priority = Task1.Priority,
+                StoryPoint = Task1.StoryPoint,
                 //AttachmentUrl = Task1.AttachmentUrl,
                 StartDate = Task1.ExpStartDate,
                 EndDate = Task1.ExpEndDate,

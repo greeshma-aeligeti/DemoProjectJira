@@ -12,6 +12,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\DemoJira.DataAccess\DemoJira.DataAccess.csproj" />
+    <ProjectReference Include="..\DemoJira.Shared\DemoJira.Shared.csproj" />
   </ItemGroup>
 
 </Project>

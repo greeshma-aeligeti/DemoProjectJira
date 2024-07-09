@@ -71,8 +71,15 @@ else
                         }
                     }
                   
+                    @if (task.Type.ToString() == "Task")
+                    {
+                        <TableRowCell>@task.TaskStatus</TableRowCell>
+                    }
+                    @if (task.Type.ToString() == "Bug")
+                    {
+                        <TableRowCell>@task.BugStatus</TableRowCell>
+                    }
 
-                    <TableRowCell>@task.StatusId</TableRowCell>
 
                         <TableRowCell>@task.Priority</TableRowCell>
                     @* <td>@task.ProjectId</td>*@

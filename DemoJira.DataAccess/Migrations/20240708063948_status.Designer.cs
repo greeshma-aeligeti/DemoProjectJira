@@ -4,6 +4,7 @@ using DemoJira.DataAccess;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DemoJira.DataAccess.Migrations
 {
     [DbContext(typeof(SiraDBContext))]
-    partial class SiraDBContextModelSnapshot : ModelSnapshot
+    [Migration("20240708063948_status")]
+    partial class status
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -67,9 +70,12 @@ namespace DemoJira.DataAccess.Migrations
                     b.Property<int>("ProjId")
                         .HasColumnType("int");
 
+                    b.Property<int>("ProjectEntityId")
+                        .HasColumnType("int");
+
                     b.HasKey("IterationId");
 
-                    b.HasIndex("ProjId");
+                    b.HasIndex("ProjectEntityId");
 
                     b.ToTable("Iterations");
                 });
@@ -115,9 +121,6 @@ namespace DemoJira.DataAccess.Migrations
                         .HasColumnType("int");
 
                     b.Property<int>("ProjectId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("StoryPoint")
                         .HasColumnType("int");
 
                     b.Property<int?>("TaskStatus")
@@ -222,7 +225,7 @@ namespace DemoJira.DataAccess.Migrations
                 {
                     b.HasOne("DemoJira.DataAccess.Entities.Project", "ProjectEntity")
                         .WithMany("Iterations")
-                        .HasForeignKey("ProjId")
+                        .HasForeignKey("ProjectEntityId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 

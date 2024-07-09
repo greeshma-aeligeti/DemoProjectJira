@@ -100,12 +100,14 @@ namespace DemoJira.DataAccess.Repositories
             {
                 existingTask.TaskId = task.TaskId;
                 existingTask.Title = task.Title;
-                existingTask.status = task.status   ;
+                existingTask.TaskStatus = task.TaskStatus   ;
+                existingTask.BugStatus = task.BugStatus ;
                 existingTask.ProjectId = task.ProjectId;
                 existingTask.IterationId  = task.IterationId;
                 existingTask.ExpStartDate = task.ExpStartDate;
                 existingTask.ExpEndDate
                     = task.ExpEndDate;
+                existingTask.StoryPoint = task.StoryPoint;
                 existingTask.Type = task.Type;
                 existingTask.ActEndDate = task.ActEndDate;
                 existingTask.ActStartDate = task.ActStartDate;

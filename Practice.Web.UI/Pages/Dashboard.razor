@@ -77,9 +77,8 @@
     {
         var tasks = await TaskService.GetTasksAsync();
 
-        newTasks = tasks.Where(t => t.StatusId == "New").ToList();
-        inProgressTasks = tasks.Where(t => t.StatusId == "In-Progress").ToList();
-        completedTasks = tasks.Where(t => t.StatusId == "Closed").ToList();
+        newTasks = tasks.Where(t => t.TaskStatus == MyTaskStatus.New).ToList();
+     
         // Populate other status lists similarly
     }
 }

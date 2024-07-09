@@ -7,6 +7,7 @@
 @* @inject IToastService ToastService *@
 
 <EditForm Model="task" OnValidSubmit="HandleValidSubmit">
+
     <Alert @ref="created" Color="Color.Success">Task Created Succesfully  <CloseButton /></Alert>
 
        <DataAnnotationsValidator />
@@ -65,25 +66,37 @@
             <div class="col-4">
                 <label class="fw-bold" for="Type" >Type</label>
                 <br/>
-                <InputSelect class="form-control" id="Type" @bind-Value="task.Type">
-                    <option hidden value="">Choose type</option>
-                    <option value="Task">Task</option>
-                    <option value="Bug">Bug</option>
+               
 
+
+
+                <InputSelect class="form-control" id="Type" @bind-Value="task.Type">
+                    @foreach (var type in Enum.GetValues(typeof(TaskType)).Cast<TaskType>())
+                    {
+                        <option value="@type">@type.ToString()</option>
+                    }
                 </InputSelect>
+
 
             </div>
             <div class=" col-4">
                 <label class="fw-bold" for="priority">Priority</label>
                 <br />
 
+
+
+
                 <InputSelect class="form-control" id="priority" @bind-Value="task.Priority">
                     <option hidden value="">Choose Priority</option>
-                    <option value="High"> High</option>
-                    <option value="Medium">Medium</option>
-                    <option value="Low">Low</option>
-
+                    @foreach (var priority in Enum.GetValues(typeof(PriorityLevel)).Cast<PriorityLevel>())
+                    {
+                        <option value="@priority">@priority.ToString()</option>
+                    }
                 </InputSelect>
+
+
+
+
                 <ValidationMessage For="@(()=>task.Type)" />
 
    </div>
@@ -91,16 +104,39 @@
                 <label for="status" class="fw-bold">Status</label>
                 @* <InputText id="status" @bind-Value="task.CurStatus" class="form-control" /> *@
 
-                <InputSelect id="status" @bind-Value="task.StatusId" class="form-control">
+                <InputSelect id="status" class="form-control" @bind-Value="taskStatusValue" @onchange="()=>HandleStatusChange()">
+                    
                     <option hidden value="">Select Status</option>
-                    <option value="New">New</option>
-                    <option value="In-Progress" disabled>In-Progress</option>
-                    <option value="Resolved" disabled>Resolved</option>
-                    <option value="Review" disabled>Review</option>
-                    <option value="Closed" disabled>Closed</option>
 
+                    @if (task.Type == TaskType.Task)
+                    {
+                        bool isFirst = true;
+                        foreach (var status in Enum.GetValues(typeof(MyTaskStatus)).Cast<MyTaskStatus>())
+                        {
+                            <option value="@status" disabled="@(!isFirst)">
+                                @status.ToString()
+                            </option>
+                            isFirst = false;
+                        }
+                    }
+                    else if (task.Type == TaskType.Bug)
+                    {
+                        bool isFirst = true;
+
+                        @foreach (var status in Enum.GetValues(typeof(BugStatus)).Cast<BugStatus>())
+                        {
+                            <option value="@status" disabled="@(!isFirst)">@status.ToString()</option>
+                            isFirst = false;
+                        }
+                    }
                 </InputSelect>
-                <ValidationMessage For="@(()=>task.StatusId)" />
+
+
+
+
+
+            
+                
 
 
             </div>
@@ -120,6 +156,13 @@
             <label for="endDate" class="fw-bold">End Date</label>
         <InputDate id="endDate" @bind-Value="task.EndDate" class="form-control" />
                 <ValidationMessage For="@(()=>task.EndDate)" />
+
+    </div>
+
+    <div class="col-4"> 
+
+        <label for="storypoint" class="fw-bold">Story Point</label>
+        <InputNumber id="storypoint" @bind-Value="task.StoryPoint" class="form-control"/>
 
     </div>
         </div>
@@ -194,7 +237,8 @@
     private List<IterationDTO> Itrs = new List<IterationDTO>();
     private List<IterationDTO> filtItrs = new List<IterationDTO>();
     // private readonly IIdGeneratorService _idGeneratorService;
-
+    private string taskStatusValue;
+    private int x = 1;
     private string ItName="";
     private List<UserDTO> users = new List<UserDTO>();
     private bool flag = false;
@@ -239,11 +283,53 @@
         editContext.NotifyFieldChanged(e.FieldIdentifier);
     }
 
+    private void HandleStatusChange()
+    {
+        if (task.Type == TaskType.Task)
+        {
+            if (Enum.TryParse<MyTaskStatus>(taskStatusValue, out MyTaskStatus parsedStatus))
+            {
+                task.TaskStatus =parsedStatus;
+                StateHasChanged();
+            }
+            //task.TaskStatus = taskStatusValue;
+        }
+        else if (task.Type == TaskType.Bug)
+        {
+            if (Enum.TryParse<BugStatus>(taskStatusValue, out BugStatus parsedStatus))
+            {
+                task.BugStatus = parsedStatus;
+                StateHasChanged();
+            }
+            // task.BugStatus = taskStatusValue;
+        }
+
+    }
+
 
     private async Task HandleValidSubmit()
     {
         //  task.UserId = (int)defUser;
         task.HexaId = "";
+        if (task.Type == TaskType.Task)
+        {
+            if (Enum.TryParse<MyTaskStatus>(taskStatusValue, out MyTaskStatus parsedStatus))
+            {
+                task.TaskStatus = parsedStatus;
+                StateHasChanged();
+            }
+            //task.TaskStatus = taskStatusValue;
+        }
+        else if (task.Type == TaskType.Bug)
+        {
+            if (Enum.TryParse<BugStatus>(taskStatusValue, out BugStatus parsedStatus))
+            {
+                task.BugStatus = parsedStatus;
+                StateHasChanged();
+            }
+            // task.BugStatus = taskStatusValue;
+        }
+
         var res = await TaskService.CreateTaskAsync(task);
         flag = true;
        await created.Show();
@@ -252,8 +338,8 @@
         task.Description="";
         task.StartDate = DateTime.Now;
         task.EndDate = DateTime.Now;
-        task.StatusId="";
-        task.Priority = "";
+     //   task.StatusId="";
+        //task.Priority =null;
         await Task.Delay(3000);
         flag = false;
 
