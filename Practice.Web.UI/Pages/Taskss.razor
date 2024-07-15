@@ -1,8 +1,8 @@
 ﻿
 @page "/"
 @using System.Diagnostics
-@inject TaskAPIService TaskService
-@inject UserAPIService UserService
+@inject TaskAPIService taskService
+@inject UserAPIService userService
 @inject NavigationManager Navigation
 
 
@@ -13,8 +13,7 @@
 {
     <p><em>.............Loading...</em></p>
 }
-else
-{
+else{
    @*  <ul>
        
         @foreach (var task in tasks)
@@ -27,26 +26,84 @@ else
 
         }
     </ul> *@
+    <style>
+         TableRow {
+            padding: 10px;
+        }
 
+        .table-wrapper {
+            max-height:300px;
+            overflow-x:hidden;
+            margin: 20px;
+        }
 
+        .filter-section {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+            .filter-section input {
+                flex: 4;
+                padding: 0.5rem;
+                border-radius: 4px;
+                border: 1px solid #ced4da;
+            }
+
+           @*  .filter-section InputSelect {
+                flex: 2;
+                padding: 0.5rem;
+                border-radius: 4px;
+                border: 1px solid #ced4da;
+                white-space: nowrap;
+            } *@
+
+            .filter-section .btn {
+                white-space: nowrap;
+            }
+
+    </style>
+
+    <div class="filter-section">
+        <button class="btn btn-primary" @onclick="()=>CreateNavigate()">Create</button>
+        <input type="text" placeholder="Search by name"  @bind="nameFilter" />
+        <InputSelect class="form-control" @onselectionchange="()=>ApplyFiltersAndSort()" @bind-Value="selectedSortOption">
+            <option hidden value="">Sort by</option>
+
+            <option value="Name">Name</option>
+            <option value="Type">Type</option>
+            <option value="Status">Status</option>
+            <!-- Add more options as needed -->
+        </InputSelect>
+        <button class="btn btn-outline-dark" @onclick="()=>ApplyFiltersAndSort()">Apply</button>
+    </div>
   
 
 
 
-
+ 
 
     <Alert @ref="alert" Color="Color.Success" >Task Deleted Successfully   <CloseButton/></Alert>
     <Alert @ref="failAlert" Color="Color.Danger">Deletion failed</Alert>
-
-    <Table class="table table-striped-columns">
-        <TableHeader>
+   
+        <div style="overflow-x: auto; " class=" table-wrapper">
+    <Table class="table table-striped-columns" style="min-width:max-content">
+        <TableHeader >
             <TableRow>
                 <TableHeaderCell>Id</TableHeaderCell>
                 <TableHeaderCell>Name</TableHeaderCell>
                 <TableHeaderCell>Type</TableHeaderCell>
                 <TableHeaderCell>Description</TableHeaderCell>
-                <TableHeaderCell>User</TableHeaderCell>
+                <TableHeaderCell>Reporter</TableHeaderCell>
+
+                <TableHeaderCell>Assignee</TableHeaderCell>
                 <TableHeaderCell> Status</TableHeaderCell>
+                <TableHeaderCell> Story Points</TableHeaderCell>
+
                 <TableHeaderCell>Priority</TableHeaderCell>
                 <TableHeaderCell>Project</TableHeaderCell>
                 <TableHeaderCell>Iteration</TableHeaderCell>
@@ -55,9 +112,9 @@ else
             </TableRow>
         </TableHeader>
         <TableBody>
-            @foreach (var task in tasks)
+                @foreach (var task in filteredTasks)
             {
-                <TableRow>
+                <TableRow class="p-2">
                     <TableRowCell>@task.HexaId</TableRowCell>
                      <TableRowCell>@task.Title</TableRowCell>
                      <TableRowCell>@task.Type</TableRowCell>
@@ -65,7 +122,15 @@ else
 
                     @foreach(var u in users)
                     {
-                        if (task.UserId == u.UserId)
+                        if (task.ReporterId == u.UserId)
+                        {
+                            <TableRowCell>@u.UserName</TableRowCell>
+                        }
+                    }
+
+                    @foreach (var u in users)
+                    {
+                        if (task.AssigneeId == u.UserId)
                         {
                             <TableRowCell>@u.UserName</TableRowCell>
                         }
@@ -79,6 +144,7 @@ else
                     {
                         <TableRowCell>@task.BugStatus</TableRowCell>
                     }
+                    <TableRowCell>@task.StoryPoint</TableRowCell>
 
 
                         <TableRowCell>@task.Priority</TableRowCell>
@@ -103,6 +169,7 @@ else
                       <a  @onclick="()=>DeleteTask(task.Id)"><i class="bi bi-trash"></i></a>
                         <a  @onclick="()=>UpdateTask(task.Id)"><i class="bi p-2 bi-pencil"></i></a>
                         <a @onclick="()=>LinkTask(task.Id)"><i class=" bi bi-link"></i></a>
+                        <a @onclick="()=>Attach(task.Id)"><i class=" bi bi-upload"></i></a>
 
                   </TableRowCell>
                     
@@ -112,9 +179,11 @@ else
         </TableBody>
     </Table>
 
+    </div>
+    
 
-
-
+  
+    
 
     @code {
     private IEnumerable<TaskDTO> tasks;
@@ -128,10 +197,15 @@ else
     Alert alert;
     Alert failAlert;
 
+    private string nameFilter = string.Empty;
+    private List<TaskDTO> filteredTasks ;
+    private string selectedSortOption = "Name";
+
+
     private async Task DeleteTask(int id)
     {
 
-        var res=  await TaskService.DeleteTaskApi(id);
+        var res=  await taskService.DeleteTaskApi(id);
         if (res)
         {
             alert.Show();
@@ -156,12 +230,48 @@ else
     {
         Navigation.NavigateTo($"/LinkTask/{id}");
     }
+    private async Task Attach(int id)
+    {
+        Navigation.NavigateTo($"/upload/{id}");
+    }
+
+    private async Task CreateNavigate()
+    {
+        Navigation.NavigateTo("/CreateTask");
+    }
     private async Task Reload()
     {
-        tasks = await TaskService.GetTasksAsync();
+        tasks = await taskService.GetTasksAsync();
         StateHasChanged();
 
     }
+
+    private async Task ApplyFiltersAndSort()
+    {
+        filteredTasks = tasks.ToList() ?? new List<TaskDTO>();
+
+        // Apply filters
+        if (!string.IsNullOrWhiteSpace(nameFilter))
+        {
+            filteredTasks = filteredTasks.Where(t => t.Title.Contains(nameFilter, StringComparison.OrdinalIgnoreCase)).ToList();
+        }
+
+        // Apply sorting
+        switch (selectedSortOption)
+        {
+            case "Name":
+                filteredTasks = filteredTasks.OrderBy(t => t.Title).ToList();
+                break;
+            case "Type":
+                filteredTasks = filteredTasks.OrderBy(t => t.Type).ToList();
+                break;
+            case "Status":
+                filteredTasks = filteredTasks.OrderBy(t => t.TaskStatus).ToList();
+                break;
+                // Add more cases as needed
+        }
+    }
+
 
 
     protected override async Task OnInitializedAsync()
@@ -169,18 +279,20 @@ else
 
         try
         {
-            if(TaskService==null){
+            if(taskService==null){
                 Console.WriteLine("Tasks service is null");
                 return;
             }
-            var tasksList = (await TaskService.GetTasksAsync());
+            var tasksList = (await taskService.GetTasksAsync());
 
             Console.WriteLine(tasksList);
             if(tasksList!=null){
                 tasks = tasksList.ToList();
-                proj = (await TaskService.GetAllProjectsAsync()).ToArray();
-                itrs = (await TaskService.GetAllIterations()).ToArray();
-                users = (await UserService.GetAllUsersAsync()).ToArray();
+                proj = (await taskService.GetAllProjectsAsync()).ToArray();
+                itrs = (await taskService.GetAllIterations()).ToArray();
+                users = (await userService.GetAllUsersAsync()).ToArray();
+               await ApplyFiltersAndSort();
+
             }
             else{
                 Console.WriteLine("Tasks service returned null");

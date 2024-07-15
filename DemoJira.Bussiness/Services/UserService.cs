@@ -23,8 +23,8 @@ namespace DemoJira.Bussiness.Services
             var Users=await _userRepository.GetAllUsers();
             var response = Users.Select(u => new UserDTO
             {
-                UserId = u.Id,
-                UserName = u.Name,
+                UserId = u.UserId,
+                UserName = u.UserName,
            
                // password = u.Password,
             });
@@ -39,8 +39,8 @@ namespace DemoJira.Bussiness.Services
             if (user == null) return null;
             return new UserDTO
             {
-                UserId = user.Id,
-                UserName = user.Name,
+                UserId = user.UserId,
+                UserName = user.UserName
 /*                UserEmail = user.Email,
 */               // password = user.Password
             };

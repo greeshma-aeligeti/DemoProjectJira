@@ -13,14 +13,14 @@ namespace DemoJira.DataAccess.Repositories
     {
         private readonly SiraDBContext _dbContext;
 
-       public TaskRepos(SiraDBContext dbContext)
+        public TaskRepos(SiraDBContext dbContext)
         {
             _dbContext = dbContext;
         }
         public async Task<MyTask> CreateTask(MyTask task)
         {
-          var response=  await _dbContext.Tasks.AddAsync(task);
-             await _dbContext.SaveChangesAsync();
+            var response = await _dbContext.Tasks.AddAsync(task);
+            await _dbContext.SaveChangesAsync();
             return response.Entity;
 
             //throw new NotImplementedException();
@@ -30,11 +30,11 @@ namespace DemoJira.DataAccess.Repositories
         {
             var rels = await _dbContext.Relations.ToListAsync();
 
-            foreach(TasksRelation r in rels)
+            foreach (TaskRelationship r in rels)
             {
-                if(task.TaskId==r.TaskId1 || task.TaskId == r.TaskId2)
+                if (task.TaskId == r.MainTaskId || task.TaskId == r.RelatedTaskId)
                 {
-                     _dbContext.Relations.Remove(r);
+                    _dbContext.Relations.Remove(r);
                     await _dbContext.SaveChangesAsync();
                 }
             }
@@ -45,20 +45,20 @@ namespace DemoJira.DataAccess.Repositories
             if (task != null)
             {
                 _dbContext.Comments.RemoveRange(task1.Comments);
-               
+
                 _dbContext.Tasks.Remove(task);
                 await _dbContext.SaveChangesAsync();
             }
 
 
 
-           // throw new NotImplementedException();
+            // throw new NotImplementedException();
         }
 
-        public async Task<IEnumerable< MyTask>> GetAllTasks()
+        public async Task<IEnumerable<MyTask>> GetAllTasks()
         {
             return await _dbContext.Tasks.ToListAsync();
-           // throw new NotImplementedException();
+            // throw new NotImplementedException();
         }
         public async Task<IEnumerable<Project>> GetAllProjs()
         {
@@ -69,9 +69,9 @@ namespace DemoJira.DataAccess.Repositories
         public async Task<Project> GetProjectById(int id)
         {
 
-            var proj=from p in _dbContext.Areas where p.Id == id select p;
+            var proj = from p in _dbContext.Areas where p.Id == id select p;
             Project project = new Project();
-            foreach(var item in proj)
+            foreach (var item in proj)
             {
                 project = item;
             }
@@ -81,29 +81,32 @@ namespace DemoJira.DataAccess.Repositories
 
         public async Task<MyTask> GetTaskById(int id)
         {
-            var Task=from t in _dbContext.Tasks
-                     where t.TaskId == id
-                     select t;
-            MyTask t1=new MyTask();
-            foreach(var t in Task)
+            var Task = from t in _dbContext.Tasks
+                       where t.TaskId == id
+                       select t;
+            MyTask t1 = new MyTask();
+            foreach (var t in Task)
             {
                 t1 = t;
             }
             return t1;
+
+            var task = await _dbContext.Tasks.FirstOrDefaultAsync(t => t.TaskId == id);
+            return task;
             //throw new NotImplementedException();
         }
 
         public async Task<MyTask> UpdateTask(MyTask task)
         {
-            var existingTask=await _dbContext.Tasks.FirstOrDefaultAsync(t => t.TaskId == task.TaskId);
-            if(existingTask != null)
+            var existingTask = await _dbContext.Tasks.FirstOrDefaultAsync(t => t.TaskId == task.TaskId);
+            if (existingTask != null)
             {
                 existingTask.TaskId = task.TaskId;
                 existingTask.Title = task.Title;
-                existingTask.TaskStatus = task.TaskStatus   ;
-                existingTask.BugStatus = task.BugStatus ;
+                existingTask.TaskStatus = task.TaskStatus;
+                existingTask.BugStatus = task.BugStatus;
                 existingTask.ProjectId = task.ProjectId;
-                existingTask.IterationId  = task.IterationId;
+                existingTask.IterationId = task.IterationId;
                 existingTask.ExpStartDate = task.ExpStartDate;
                 existingTask.ExpEndDate
                     = task.ExpEndDate;
@@ -112,27 +115,87 @@ namespace DemoJira.DataAccess.Repositories
                 existingTask.ActEndDate = task.ActEndDate;
                 existingTask.ActStartDate = task.ActStartDate;
                 existingTask.MyUserId = task.MyUserId;
+                existingTask.ReporterId = task.ReporterId;
                 existingTask.Description = task.Description;
-              //  existingTask.AssignedToUser = task.AssignedToUser;
-               // existingTask.Description= task.Description;
-                existingTask.Priority   = task.Priority;
-             
+                //  existingTask.AssignedToUser = task.AssignedToUser;
+                // existingTask.Description= task.Description;
+                existingTask.Priority = task.Priority;
+
             }
             await _dbContext.SaveChangesAsync();
             return existingTask;
-           // throw new NotImplementedException();
+            // throw new NotImplementedException();
         }
 
-     
+
 
         public async Task<IEnumerable<Iteration>> GetIterationAll()
         {
             return await _dbContext.Iterations.ToListAsync();
         }
 
-        public Task<MyTask> AddAttachmentToTask(int taskId, Attachment attachment)
+
+
+        public async Task AddTaskRelationshipAsync(TaskRelationship relationship)
         {
-            throw new NotImplementedException();
+            var existingRelationship = await _dbContext.Relations
+             .FirstOrDefaultAsync(r => r.MainTaskId == relationship.MainTaskId && r.RelatedTaskId == relationship.RelatedTaskId);
+
+            if (existingRelationship != null)
+            {
+                throw new InvalidOperationException("This relationship already exists.");
+            }
+
+            MyTask Main = await GetTaskById(relationship.MainTaskId);
+            MyTask Sub = await GetTaskById(relationship.RelatedTaskId);
+
+
+            _dbContext.Relations.Add(relationship);
+            await _dbContext.SaveChangesAsync();
+
+            if (relationship.RelationshipType.Equals(1))
+            {
+
+                Main.ParentTasks.Add(relationship);
+
+            }
+            else if (relationship.RelationshipType.Equals(2))
+            {
+                Main.ChildTasks.Add(relationship);
+            }
+            await _dbContext.SaveChangesAsync();
+
+
+            //throw new NotImplementedException();
+        }
+
+        public async Task RemoveTaskRelationshipAsync(int parentTaskId, int childTaskId)
+        {
+            var relationship = await _dbContext.Relations
+            .FirstOrDefaultAsync(r => r.MainTaskId == parentTaskId && r.RelatedTaskId == childTaskId);
+            MyTask Main = await GetTaskById(parentTaskId);
+            MyTask Sub = await GetTaskById(childTaskId);
+
+            if (relationship != null)
+            {
+                Main.ParentTasks.Remove(relationship);
+                Sub.ChildTasks.Remove(relationship);
+                _dbContext.Relations.Remove(relationship);
+                await _dbContext.SaveChangesAsync();
+            }
+            //throw new NotImplementedException();
+        }
+
+        public async Task<List<TaskRelationship>> GetTaskRelationshipsAsync(int taskId)
+        {
+            return await _dbContext.Relations
+           .Where(r => r.MainTaskId == taskId || r.RelatedTaskId == taskId)
+           .ToListAsync();
+        }
+        public async Task<bool> IsChildOfAsync(int parentTaskId, int childTaskId)
+        {
+            return await _dbContext.Relations
+                .AnyAsync(r => r.MainTaskId == parentTaskId && r.RelatedTaskId == childTaskId);
         }
     }
 }

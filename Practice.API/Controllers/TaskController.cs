@@ -3,6 +3,7 @@ using DemoJira.Bussiness.ServiceInterface;
 using Microsoft.AspNetCore.Mvc;
 using AutoMapper;
 using DemoJira.Bussiness.Services;
+using DemoJira.Bussiness.APIServices;
 
 namespace Practice.API.Controllers
 {
@@ -163,7 +164,7 @@ namespace Practice.API.Controllers
             return Ok(new { AttachmentUrl = attachmentUrl });
         
     }
-        [HttpGet("{taskId}/download")]
+       /* [HttpGet("{taskId}/download")]
         public IActionResult DownloadFile(int taskId)
         {
         // Get the attachment URL from the database (pseudo-code)
@@ -176,7 +177,18 @@ namespace Practice.API.Controllers
             var fileName = Path.GetFileName(filePath);
 
             return File(fileBytes, "application/octet-stream", fileName);
-        }
+        }*/
 
+
+        [HttpPost("add-relationship")]
+        public async Task<IActionResult> AddTaskRelationship([FromBody] TaskRelationshipDTO relationshipDTO)
+        {
+
+
+            await _taskService.AddTaskRelationshipAsync(relationshipDTO);
+
+            return Ok("Relationship added successfully");
+        }
+        
     }
 }

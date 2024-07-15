@@ -2,6 +2,7 @@
 using DemoJira.Bussiness.ServiceInterface;
 using DemoJira.DataAccess.Entities;
 using DemoJira.DataAccess.InterfaceForRepo;
+using DemoJira.Shared.Enums;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,22 +21,26 @@ namespace DemoJira.Bussiness.Services
             _taskRepository = taskRepository;
         }
 
-        public async Task<TasksRelation> CreateRelation(RelationDTO relationDTO)
+        public async Task<TaskRelationship> CreateRelation(TaskRelationshipDTO relationshipDTO)
         {
-            TasksRelation relationTask = new TasksRelation
+            if (relationshipDTO.RelationshipType == TaskRelationshipType.Parent && await _repository.IsChildOfAsync(relationshipDTO.ChildTaskId, relationshipDTO.ParentTaskId))
             {
-                TaskId1 = relationDTO.TaskId1,
-                TaskId2 = relationDTO.TaskId2,
-                
-                relation = relationDTO.relation
+                throw new InvalidOperationException("A child task cannot be a parent of its own parent.");
+            }
 
+
+            var relationship = new TaskRelationship
+            {
+                Id = relationshipDTO.Id,
+                MainTaskId = relationshipDTO.ParentTaskId,
+                RelatedTaskId = relationshipDTO.ChildTaskId,
+                RelationshipType = relationshipDTO.RelationshipType
             };
-            var t1=await _taskRepository.GetTaskById(relationTask.TaskId1);
-            var t2=await _taskRepository.GetTaskById(relationTask.TaskId2);
-           // await _taskRepository.addRelation(t1, t2);
-            var response = await _repository.CreateRelation(relationTask);
-            return response;
-           // throw new NotImplementedException();
+
+
+            var resp=await _repository.CreateRelation(relationship);
+            return resp;
+            // throw new NotImplementedException();
         }
 
         public async Task DeleteRelation(int id)
@@ -45,28 +50,41 @@ namespace DemoJira.Bussiness.Services
          //   throw new NotImplementedException();
         }
 
-        public async Task<IEnumerable<RelationDTO>> GetAllRelations()
+        public async Task<IEnumerable<TaskRelationshipDTO>> GetAllRelations()
         {
             var relations=await _repository.GetAllRelations();
-            var resp = relations.Select(r => new RelationDTO
+            var resp = relations.Select(r => new TaskRelationshipDTO
             {
-                TaskId1 = r.TaskId1,
-                TaskId2 = r.TaskId2,
-                relation = r.relation
+                ParentTaskId = r.MainTaskId,
+                ChildTaskId = r.RelatedTaskId,
+                RelationshipType = r.RelationshipType
             });
             return resp;
             //throw new NotImplementedException();
         }
 
-        public async Task<RelationDTO> GetRelByID(int id)
+        public async Task<IEnumerable<TaskRelationshipDTO>> GetAllRelationsByTID(int Tid)
+        {
+            var relations = await _repository.GetAllRelationsWithTaskID(Tid);
+            var resp = relations.Select(r => new TaskRelationshipDTO
+            {
+                Id=r.Id,
+                ParentTaskId = r.MainTaskId,
+                ChildTaskId = r.RelatedTaskId,
+                RelationshipType = r.RelationshipType
+            });
+            return resp;
+        }
+
+        public async Task<TaskRelationshipDTO> GetRelByID(int id)
         {
             var rel=await _repository.GetRelByID(id);
             if (rel == null) return null;
-            return new RelationDTO
+            return new TaskRelationshipDTO
             {
-                TaskId1 = rel.TaskId1,
-                TaskId2 = rel.TaskId2,
-                relation = rel.relation
+                ParentTaskId = rel.MainTaskId,
+                ChildTaskId = rel.RelatedTaskId,
+                RelationshipType = rel.RelationshipType
             };
            // throw new NotImplementedException();
         }

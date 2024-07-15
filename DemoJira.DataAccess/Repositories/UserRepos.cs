@@ -34,7 +34,7 @@ namespace DemoJira.DataAccess.Repositories
         {
 
             var user = from u in _dbContext.NewUsers
-                       where u.Id == id
+                       where u.UserId == id
                        select u;
             User U1 = new User();
             foreach (var u in user)

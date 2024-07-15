@@ -1,5 +1,6 @@
 ﻿@page "/Comment"
 @inject CommentAPIService CmtApiService
+@inject NavigationManager Navigation
 
 @inject UserAPIService UserService
 
@@ -16,8 +17,11 @@
                     
                     <textarea class="form-control " @bind="Cont" placeholder="Enter your comment..."></textarea>
                     <div class="d-flex flex-row-reverse bd-highlight p-3">
+
                         <button class="btn btn-primary me-1 p-2 bd-highlight" @onclick="HandleValidSubmit">Save</button>&nbsp
                         <button class="btn btn-secondary p-2 bd-highlight" @onclick="CancelComment">Cancel</button>
+                            <a @onclick="()=>Attach(TaskId)"><i class="bi bi-upload m-3" style="font-size: 1.5rem; font-weight: bold;"></i></a>
+
                     </div>
                 </div>
             </div>
@@ -96,7 +100,7 @@
                 UserId = UserId,
                 CreatedAt = DateTime.Now
     };
-        flag.Show();
+       await flag.Show();
         var cmt =await CmtApiService.CreateComment(comment1);
         Cont = string.Empty;
         await Task.Delay(2000);
@@ -106,7 +110,18 @@
        // Reload();
 
     }
-   
+    private async Task Attach(int id)
+    {
+
+        if (Navigation != null)
+        {
+            Navigation.NavigateTo($"/upload/{id}");
+        }
+        else
+        {
+            Console.WriteLine("NavigationManager is not initialized.");
+        }
+    }
     private void HandleCancel()
     {
         // Handle cancel action

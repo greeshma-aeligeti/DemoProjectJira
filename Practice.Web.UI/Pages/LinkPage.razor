@@ -9,25 +9,28 @@
 <Alert @ref="failAlert" Color="Color.Danger">Link already exists  <CloseButton /> </Alert>
 <Alert @ref="addTask" Color="Color.Danger">Select Task <i class="bi bi-exclamation-triangle"></i>    <CloseButton /> </Alert>
 
-<EditForm Model="relation" OnValidSubmit="HandleValidSubmit">
+<EditForm Model="relation" OnValidSubmit="HandleValidSubmit" >
     <Forms.DataAnnotationsValidator/>
+
     <div class="px-2 container">
         <h3>Add Link</h3>
 
         <div class="row">
            
             <label for="rel" class="fw-bold">Relation</label>
-            <InputSelect id="rel" class="form-control m-2 ms-2" @bind-Value="relation.relation">
-                <option value="Child">Child</option>
-                <option value="Parent">Parent</option>
-                <option value="Related">Related to</option>
+            <InputSelect id="relationshipType" @bind-Value="selectedRelationshipType" class="form-control">
+                <option hidden value="">Select Relationship Type</option>
+                @foreach (var type in Enum.GetValues(typeof(TaskRelationshipType)).Cast<TaskRelationshipType>())
+                {
+                    <option value="@type">@type.ToString()</option>
+                }
             </InputSelect>
         </div>
 
         <div class="d-flex flex-row row">
             <div class="col-6">
                 <label for="t2" class="fw-bold">Task1</label>
-                <InputSelect class="form-control" id="t2" @bind-Value="relation.TaskId1">
+                <InputSelect class="form-control" id="t2" @bind-Value="relation.ParentTaskId">
                     @foreach (var t in tasks)
                     {
                         if (t.Id == fromId)
@@ -41,7 +44,7 @@
             </div>
         <div class="col-6">
             <label for="t2" class="fw-bold">Task2</label>
-            <InputSelect class="form-control" id="t2" @bind-Value="relation.TaskId2">
+            <InputSelect class="form-control" id="t2" @bind-Value="selectedTaskId">
                 <option hidden>Select Task</option>
                 @foreach (var t in tasks)
                 {
@@ -63,65 +66,99 @@
     </div>
 </EditForm>
 
+<Table>
+    <TableHeader>
+        <TableRow>
+            <TableHeaderCell>From Task</TableHeaderCell>
+            <TableHeaderCell>To Task</TableHeaderCell>
+            <TableHeaderCell>Relation Type</TableHeaderCell>
+        </TableRow>
+    </TableHeader>
+    <TableBody>
+        @foreach(var rel in relationsByTid)
+        {
+        <TableRow>
+           <TableRowCell>
+               @rel.ParentTaskId
+           </TableRowCell>
+           <TableRowCell>@rel.ChildTaskId</TableRowCell>
+           <TableRowCell>@rel.RelationshipType.ToString()</TableRowCell>
+           </TableRow>
+        }
+        
+    </TableBody>
+</Table>
+
 @code {
 
     [Parameter]
     public int fromId{ get; set; }
 
-    public TaskDTO Task1 = new TaskDTO();
+    public TaskDTO FromTask = new TaskDTO();
     public List<TaskDTO> tasks = new List<TaskDTO>();
-    private RelationDTO relation = new RelationDTO();
+    public int? selectedTaskId;
+    private TaskRelationshipDTO relation = new TaskRelationshipDTO();
     private List<RelationDTO> AllRelations = new List<RelationDTO>();
+    private IEnumerable<TaskRelationshipDTO> relationsByTid = new List<TaskRelationshipDTO>();
+    private TaskRelationshipType? selectedRelationshipType;
+    private static int count = 1;
     Alert alert;
     Alert failAlert;
     Alert addTask;
 
     protected override async void OnInitialized()
     {
-        Task1 = await TaskService.GetTaskByID(fromId);
+        var relById = await relationService.GetAllRelationsByTid(fromId);
+        relationsByTid = relById.ToList();
+        FromTask = await TaskService.GetTaskByID(fromId);
         var taskList = await TaskService.GetTasksAsync();
         tasks = taskList.ToList();
-        relation.TaskId2 = 0;
+        relation.ParentTaskId = fromId;
+        relation.ChildTaskId = 0;
         // base.OnInitialized();
     }
 
     private async Task HandleValidSubmit()
     {
-        relation.TaskId1 = fromId;
+        relation.Id = count;
+        relation.ParentTaskId = fromId;
+        relation.ChildTaskId = selectedTaskId.Value;
+        relation.RelationshipType = selectedRelationshipType.Value;
 
-        AllRelations = (await relationService.GetAllRelations()).ToList();
-        if (relation.TaskId2 == 0)
+        try
         {
-            addTask.Show();
-            return;
-        }
-        foreach(var rel in AllRelations)
-        {
-            if((rel.TaskId1==fromId && rel.TaskId2 == relation.TaskId2) ||(rel.TaskId1==relation.TaskId2 && rel.TaskId2==fromId)  )
+            var res = await relationService.CreateRelationAsync(relation);
+            count = count + 1;
+            selectedRelationshipType = null;
+            selectedTaskId = null;
+            StateHasChanged();
+            if (res != null)
             {
-
-                failAlert.Show();
-                relation.relation = "";
-
-                return;
+                Reload();
+                alert.Show();
 
             }
-        }
-       
-
-        var res = await relationService.CreateRelationAsync(relation);
-        StateHasChanged();
-        if (res!=null)
-        {
-            alert.Show();
+            else
+            {
+                failAlert.Show();
+            }
 
         }
-        else
+        catch(Exception ex)
         {
+            Reload();
             failAlert.Show();
         }
 
-        relation.relation = "";
+        // relation.relation = "";
+
+    }
+
+
+    private async Task Reload()
+    {
+        relationsByTid =await relationService.GetAllRelationsByTid(fromId);
+        StateHasChanged();
 
     }
 

@@ -12,7 +12,8 @@ namespace DemoJira.DataAccess.Entities
     public class MyTask
     {
         [Key]
-        public int TaskId { get; set; }
+       public int TaskId { get; set; }
+
         public string HexId {  get; set; }
         [Required]
         [MaxLength(40)]
@@ -49,12 +50,24 @@ namespace DemoJira.DataAccess.Entities
         [ForeignKey(nameof(MyUserId))]
         public User MyUser { get; set; }
 
+        public int ReporterId { get; set; }
+
+        public User Reporter { get; set; }
+
+
+
+
+        public ICollection<MyFile> TaskFiles {  get; set; }
    
         public ICollection<Comment>? Comments { get; set; }
+        
+        public ICollection<TaskRelationship>? ParentTasks { get; set; }
+       
+        public ICollection<TaskRelationship>? ChildTasks { get; set; }
 
 
 
     }
-  
+
 
 }

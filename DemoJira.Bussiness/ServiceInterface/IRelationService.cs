@@ -10,9 +10,11 @@ namespace DemoJira.Bussiness.ServiceInterface
 {
     public interface IRelationService
     {
-        Task<TasksRelation> CreateRelation(RelationDTO relationDTO);
-        Task <IEnumerable<RelationDTO>> GetAllRelations();
+        Task<TaskRelationship> CreateRelation(TaskRelationshipDTO relationDTO);
+        Task <IEnumerable<TaskRelationshipDTO>> GetAllRelations();
         Task DeleteRelation(int id);
-        Task<RelationDTO> GetRelByID(int id);
+        Task<IEnumerable<TaskRelationshipDTO>> GetAllRelationsByTID(int Tid);
+
+        Task<TaskRelationshipDTO> GetRelByID(int id);
     }
 }

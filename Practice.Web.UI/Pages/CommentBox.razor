@@ -63,7 +63,7 @@
     {
 
         bool del= await commentApiService.DeleteCommentApi(id);
-        Reload();
+       await Reload();
 
         
         // Implement the delete comment logic here

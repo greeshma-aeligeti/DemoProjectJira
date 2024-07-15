@@ -17,7 +17,11 @@ namespace DemoJira.DataAccess.InterfaceForRepo
         Task <Project> GetProjectById(int id);
         Task<IEnumerable<Project>> GetAllProjs();
         Task<IEnumerable<Iteration>> GetIterationAll();
-       /// Task<MyTask> AddAttachmentToTask(int taskId, Attachment attachment);
+        Task AddTaskRelationshipAsync(TaskRelationship relationship);
+        Task RemoveTaskRelationshipAsync(int parentTaskId, int childTaskId);
+        Task<List<TaskRelationship>> GetTaskRelationshipsAsync(int taskId);
+        Task<bool> IsChildOfAsync(int parentTaskId, int childTaskId);
+        /// Task<MyTask> AddAttachmentToTask(int taskId, Attachment attachment);
 
     }
 }

@@ -39,24 +39,44 @@
 
     <br/>
 
-        <div class=" col-12 ">
+            <div class=" col-6 ">
 
-            <label for=" user" class="fw-bold">Assign User</label>
-            <InputSelect id="user" @bind-Value="task.UserId" class="form-control">
-                <option hidden value="">Select a User</option>
-                @foreach (UserDTO p in users)
-                {
-                    
-                    <option value="@p.UserId" class="d-flex flex-row align-items-center" >
+                <label for=" user" class="fw-bold">Reporter User</label>
+                <InputSelect id="user" @bind-Value="task.ReporterId" class="form-control">
+                    <option hidden value="">Select Reporter</option>
+                    @foreach (UserDTO p in users)
+                    {
+
+                        <option value="@p.UserId" class="d-flex flex-row align-items-center">
 
                             <img src="https://via.placeholder.com/20" alt="icon" style="width: 20px; height: 20px; margin-right: 8px;" />
 
-                        @p.UserName</option>
-                }
+                            @p.UserName
+                        </option>
+                    }
 
-            </InputSelect>
+                </InputSelect>
 
-        </div>
+            </div>
+            <div class=" col-6 ">
+
+                <label for=" user" class="fw-bold">Assign User</label>
+                <InputSelect id="user" @bind-Value="task.AssigneeId" class="form-control">
+                    <option hidden value="">Select Assignee</option>
+                    @foreach (UserDTO p in users)
+                    {
+
+                        <option value="@p.UserId" class="d-flex flex-row align-items-center">
+
+                            <img src="https://via.placeholder.com/20" alt="icon" style="width: 20px; height: 20px; margin-right: 8px;" />
+
+                            @p.UserName
+                        </option>
+                    }
+
+                </InputSelect>
+
+            </div>
         </div>
 
       
@@ -210,7 +230,7 @@
     </div> *@
     <div class="m-3 row">
         
-    <button type="submit" class="btn btn-primary col-3">Update Task</button></div>
+    <button type="submit" @onclick="HandleStatusChange" class="btn btn-primary col-3">Update Task</button></div>
     <div class="align-items-center">
     
     @if (flag == true)
@@ -223,7 +243,7 @@
     </div>
 </EditForm>
 
-<CreateComment TaskId="taskId" UserId="task.UserId"></CreateComment>
+<CreateComment TaskId="taskId" UserId="task.AssigneeId"></CreateComment>
 
 @code {
     [Parameter]
@@ -305,6 +325,7 @@
     }*/
 
         // await TaskService.UpdateTask(Task);
+       
        
         await TaskService.UpdateTask(taskId,task);
         StateHasChanged();

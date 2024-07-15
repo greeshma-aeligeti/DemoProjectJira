@@ -32,7 +32,7 @@ namespace DemoJira.Bussiness.Services
             Comment com = new Comment
             {
                 Content = commentDTO.Content,
-                userId = commentDTO.UserId,
+                UserId = commentDTO.UserId,
                 TaskId = commentDTO.TaskId,
               
             };
@@ -60,7 +60,7 @@ namespace DemoJira.Bussiness.Services
             var resp = Comments.Select(c => new CommentDTO
             {
                 Content = c.Content,
-                UserId=c.userId,
+                UserId=c.UserId,
                 TaskId=c.TaskId,
                 CreatedAt=c.CreatedAt
 
@@ -75,7 +75,7 @@ namespace DemoJira.Bussiness.Services
             var resp=Comments.Select(c=> new CommentDTO
             {
                 Content = c.Content,
-                UserId = c.userId,
+                UserId = c.UserId,
                 TaskId = c.TaskId,
                 CreatedAt = c.CreatedAt
 
@@ -92,7 +92,7 @@ namespace DemoJira.Bussiness.Services
             {
                 Content = cmt.Content,
 
-                UserId = cmt.userId,
+                UserId = cmt.UserId,
                 TaskId = cmt.TaskId,
                 CreatedAt = cmt.CreatedAt,
             };

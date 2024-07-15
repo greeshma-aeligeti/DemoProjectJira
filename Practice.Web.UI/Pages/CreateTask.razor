@@ -3,6 +3,7 @@
 
 @inject TaskAPIService TaskService
 @inject UserAPIService UserService
+@inject NavigationManager Navigation
 
 @* @inject IToastService ToastService *@
 
@@ -37,11 +38,11 @@
 
     <br/>
 
-        <div class=" col-12 ">
+        <div class=" col-6 ">
 
-            <label for=" user" class="fw-bold">Assign User</label>
-            <InputSelect id="user" @bind-Value="task.UserId" class="form-control">
-                <option hidden value="">Select a User</option>
+            <label for=" user" class="fw-bold">Reporter User</label>
+            <InputSelect id="user" @bind-Value="task.ReporterId" class="form-control">
+                <option hidden value="">Select Reporter</option>
                 @foreach (UserDTO p in users)
                 {
                     
@@ -55,6 +56,25 @@
             </InputSelect>
 
         </div>
+            <div class=" col-6 ">
+
+                <label for=" user" class="fw-bold">Assign User</label>
+                <InputSelect id="user" @bind-Value="task.AssigneeId" class="form-control">
+                    <option hidden value="">Select Assignee</option>
+                    @foreach (UserDTO p in users)
+                    {
+
+                        <option value="@p.UserId" class="d-flex flex-row align-items-center">
+
+                            <img src="https://via.placeholder.com/20" alt="icon" style="width: 20px; height: 20px; margin-right: 8px;" />
+
+                            @p.UserName
+                        </option>
+                    }
+
+                </InputSelect>
+
+            </div>
         </div>
 
         <div class=" d-flex flex-row p-3 mb-2 row">
@@ -238,7 +258,7 @@
     private List<IterationDTO> filtItrs = new List<IterationDTO>();
     // private readonly IIdGeneratorService _idGeneratorService;
     private string taskStatusValue;
-    private int x = 1;
+    //  private int x = 1;
     private string ItName="";
     private List<UserDTO> users = new List<UserDTO>();
     private bool flag = false;
@@ -332,15 +352,17 @@
 
         var res = await TaskService.CreateTaskAsync(task);
         flag = true;
-       await created.Show();
+        await created.Show();
         StateHasChanged();
         task.Title="";
         task.Description="";
         task.StartDate = DateTime.Now;
         task.EndDate = DateTime.Now;
-     //   task.StatusId="";
+        //   task.StatusId="";
         //task.Priority =null;
+        Navigation.NavigateTo("/");
         await Task.Delay(3000);
+        
         flag = false;
 
        // ToastService.ShowSuccess("Task Created Successfully");

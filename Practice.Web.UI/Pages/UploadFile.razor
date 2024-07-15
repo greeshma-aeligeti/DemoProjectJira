@@ -1,0 +1,202 @@
+﻿@* @page "/upload"
+@inject FileApiService FileService
+
+<h3>Upload File</h3>
+
+<EditForm Model="fileUploadModel" OnValidSubmit="HandleValidSubmit">
+    <DataAnnotationsValidator />
+
+    <label for="taskId">Task ID:</label>
+    <InputNumber @bind-Value="fileUploadModel.TaskId" id="taskId" />
+
+    <label for="file">File:</label>
+    <InputFile OnChange="HandleFileChange" id="file" />
+
+    <button type="submit">Upload</button>
+</EditForm>
+
+@code {
+    private FileUploadModel fileUploadModel = new FileUploadModel();
+    private IBrowserFile file;
+
+    protected override void OnInitialized()
+    {
+        fileUploadModel.TaskId = 0;
+        base.OnInitialized();
+    }
+
+    private void HandleFileChange(InputFileChangeEventArgs e)
+    {
+        file = e.File;
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        if (file == null)
+        {
+            Console.WriteLine("No file selected.");
+            return;
+        }
+
+        using var memoryStream = new MemoryStream();
+        await file.OpenReadStream(maxAllowedSize: 10 * 1024 * 1024).CopyToAsync(memoryStream); // Max file size: 10 MB
+
+        var fileDto = new FileDTO
+            {
+                //FileId = 1,
+        FileName = file.Name,
+            Content = memoryStream.ToArray(),
+            TaskId = fileUploadModel.TaskId
+        };
+
+        var result = await FileService.UploadFileAsync(fileDto);
+
+    }
+
+    public class FileUploadModel
+    {
+        public int TaskId { get; set; }
+    }
+}
+ *@
+
+
+
+
+@page "/upload/{id:int}"
+@using System.Reflection.Metadata
+@using System.IO
+ 
+@inject HttpClient Http
+@inject FileApiService fileUpload
+
+<h3>Upload Files</h3>
+<InputFile  OnChange="UploadFiles" multiple />
+<p>@statusMessage</p>
+
+<h1>Files uploaded</h1>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Size</th>
+            <th>ContentType</th>
+            <th>Date Attached</th>
+            <th>Actions</th>
+
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var file in files)
+        {
+            <tr>
+                <td>@file.FileName</td>
+                <td>@file.Size</td>
+                <td>@file.ContentType</td>
+                <td>@file.UploadTime.ToString("g")</td>
+                <td><i class="bi bi-download" @onclick="()=>Download(file.Id)"></i></td>
+
+            </tr>
+        }
+    </tbody>
+</table>
+
+@code {
+    private ElementReference inputFile;
+    private string statusMessage;
+    private List<FileDTO> files = new List<FileDTO>();
+    [Parameter] public int id { get; set; }
+    [Inject]
+    private IJSRuntime jsRuntime { get; set; }
+
+
+    private async Task UploadFiles(InputFileChangeEventArgs e)
+    {
+        var inputFileChangeEventArgs = e as InputFileChangeEventArgs;
+        var files = inputFileChangeEventArgs?.GetMultipleFiles();
+        if (files == null || files.Count == 0)
+        {
+            statusMessage = "No files selected.";
+            return;
+        }
+
+        using var content = new MultipartFormDataContent();
+        content.Add(new StringContent(id.ToString()), "TaskID");
+
+        foreach (var file in files)
+        {
+            var fileContent = new StreamContent(file.OpenReadStream(1024 * 1024 * 20)); // 20 MB limit
+            fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(file.ContentType);
+            content.Add(fileContent, "files", file.Name);
+        }
+
+        var result = await fileUpload.UploadFile(content);
+        if (result.IsSuccessStatusCode)
+        {
+            statusMessage = "Files uploaded successfully.";
+            await Load();
+        }
+        else
+        {
+            statusMessage = "File upload failed.";
+        }
+    }
+    private async Task Download(int fileId)
+    {
+        var fileBytes = await fileUpload.DownloadFile(fileId);
+        var file = files.FirstOrDefault(f => f.Id == fileId);
+
+        // Convert byte array to Base64 string
+        var base64Content = Convert.ToBase64String(fileBytes);
+        var url = file.FileName + file.ContentType;
+        // Create a temporary anchor element and initiate download
+        await jsRuntime.InvokeAsync<object>("saveAsFile", file.FileName, base64Content, file.ContentType);
+
+
+       
+    }
+    
+    private async Task Load()
+    {
+
+        var files1 = await fileUpload.GetFilesByTID(id);
+        files = files1.ToList();
+    }
+  
+    protected async override Task OnInitializedAsync()
+    {
+        var files1 = await fileUpload.GetFilesByTID(id);
+        files = files1.ToList();
+    }
+}
+<script>
+    window.saveAsFile = (fileName, byteString, contentType) => {
+        const byteCharacters = atob(byteString);
+        const byteNumbers = new Array(byteCharacters.length);
+        for (let i = 0; i < byteCharacters.length; i++) {
+            byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+        const byteArray = new Uint8Array(byteNumbers);
+
+        const blob = new Blob([byteArray], { type: contentType });
+
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = fileName;
+        link.click();
+        URL.revokeObjectURL(link.href);
+    };
+</script>
+<style>
+    .attachment-icon-container {
+        position: relative;
+        float: right;
+        margin-top: -2rem;
+        margin-right: 1rem;
+    }
+
+    .attachment-icon {
+        font-size: 1.5rem;
+        cursor: pointer;
+    }
+</style>

@@ -28,7 +28,8 @@ namespace DemoJira.Bussiness.DTO
         public DateTime ActStartDate { get; set; }
         public DateTime ActEndDate { get; set; }
         [Required(ErrorMessage = "User is required")]
-        public int UserId {  get; set; }
+        public int AssigneeId {  get; set; }
+        public int ReporterId { get; set; }
 
         public int StoryPoint {  get; set; }
         public PriorityLevel Priority {  get; set; }
@@ -43,7 +44,11 @@ namespace DemoJira.Bussiness.DTO
         public MyTaskStatus? TaskStatus { get; set; }
         public BugStatus? BugStatus { get; set; }
 
+        public ICollection<TaskRelationshipDTO>? ParentTasks { get; set; }
+        public ICollection<TaskRelationshipDTO>?  ChildTasks { get; set; }
 
+
+      
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {
             if (EndDate < StartDate)
@@ -58,6 +63,14 @@ namespace DemoJira.Bussiness.DTO
                 yield return new ValidationResult(
                     "End Date must be after Start Date",
                     new[] { nameof(ActEndDate) });
+            }
+
+            if (AssigneeId == ReporterId)
+            {
+                yield return new ValidationResult(
+                   "Assignee and Reporter cannot be the same.",
+                   new[] { nameof(AssigneeId) });
+
             }
         }
 

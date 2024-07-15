@@ -41,6 +41,9 @@ namespace Practice.Web.UI
             builder.Services.AddScoped<IRelationService, RelationService>();
             builder.Services.AddScoped<RelationAPIService>();
 
+            builder.Services.AddScoped<IFileRepos, FileRepos>();
+            builder.Services.AddScoped<IFileService, FileService>();
+            builder.Services.AddScoped<FileApiService>();
             // builder.Services.AddSingleton<LibraryConfiguration>();
             //builder.Services.AddAntDesign();
             //  builder.Services.AddScoped<User>();

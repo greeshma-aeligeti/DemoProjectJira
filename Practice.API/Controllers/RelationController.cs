@@ -15,18 +15,30 @@ namespace Practice.API.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<RelationDTO>> CreateRelation([FromBody]  RelationDTO relationDTO)
+        [Route("create")]
+        public async Task<ActionResult<TaskRelationshipDTO>> CreateRelation([FromBody]  TaskRelationshipDTO relationDTO)
         {
             var createdRelation=await _relationService.CreateRelation(relationDTO);
             return Ok(createdRelation);
         }
         [HttpGet]
         [Route("relations")]
-        public async Task<ActionResult<IEnumerable<RelationDTO>>> GetAllRelations()
+        public async Task<ActionResult<IEnumerable<TaskRelationshipDTO>>> GetAllRelations()
         {
             var rels=await _relationService.GetAllRelations();
             return Ok(rels);
         }
+
+        [HttpGet]
+        [Route("relByTid/{tid}")]
+        public async Task<ActionResult<IEnumerable<TaskRelationshipDTO>>> GetAllRelationsByTid(int tid)
+        {
+            var rels = await _relationService.GetAllRelationsByTID(tid);
+            return Ok(rels);
+        }
+
+
+
         [HttpGet("{id}")]
         public async Task<IActionResult> GetRelByID(int id)
         {

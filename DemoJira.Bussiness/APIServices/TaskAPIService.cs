@@ -24,7 +24,8 @@ namespace DemoJira.Bussiness.APIServices
         public TaskAPIService(HttpClient httpClient)
         {
             _httpClient = httpClient;
-            _httpClient.BaseAddress = new Uri("http://localhost:5120");
+            _httpClient.BaseAddress = new Uri("http://localhost:5120/");
+       
         }
 
         public async Task<IEnumerable<TaskDTO>> GetTasksAsync()
@@ -138,7 +139,14 @@ namespace DemoJira.Bussiness.APIServices
             return await response.Content.ReadFromJsonAsync<TaskDTO>();
         }
 
-        public async Task<(bool Success, string AttachmentUrl)> UploadFile(int taskId, MultipartFormDataContent content)
+        public async Task<bool> AddTaskRelation(TaskRelationshipDTO taskRelationshipDTO)
+        {
+            var resp = await _httpClient.PostAsJsonAsync("api/Task/add-relationship", taskRelationshipDTO);
+            resp.EnsureSuccessStatusCode();
+            return resp.IsSuccessStatusCode;
+        }
+
+       /* public async Task<(bool Success, string AttachmentUrl)> UploadFile(int taskId, MultipartFormDataContent content)
         {
             var response = await _httpClient.PostAsync($"api/task/{taskId}/upload", content);
             if (response.IsSuccessStatusCode)
@@ -153,7 +161,7 @@ namespace DemoJira.Bussiness.APIServices
         private class AttachmentResponse
         {
             public string AttachmentUrl { get; set; }
-        }
+        }*/
 
     }
 }

@@ -12,8 +12,8 @@ namespace DemoJira.Bussiness.APIServices
     public class RelationAPIService
     {
         private readonly HttpClient _httpClient;
-        private IEnumerable<RelationDTO> _relations;
-        private RelationDTO _relation;
+        private IEnumerable<TaskRelationshipDTO> _relations;
+        private TaskRelationshipDTO _relation;
         public RelationAPIService(HttpClient httpClient)
         {
             _httpClient = httpClient;
@@ -21,14 +21,14 @@ namespace DemoJira.Bussiness.APIServices
 
         }
 
-        public async Task<RelationDTO> CreateRelationAsync(RelationDTO dto)
+        public async Task<TaskRelationshipDTO> CreateRelationAsync(TaskRelationshipDTO dto)
         {
-            var resp = await _httpClient.PostAsJsonAsync("api/Relation", dto);
+            var resp = await _httpClient.PostAsJsonAsync("api/Relation/create", dto);
             resp.EnsureSuccessStatusCode();
-            return await resp.Content.ReadFromJsonAsync<RelationDTO>();
+            return await resp.Content.ReadFromJsonAsync<TaskRelationshipDTO>();
         }
 
-        public async Task<IEnumerable<RelationDTO>> GetAllRelations()
+        public async Task<IEnumerable<TaskRelationshipDTO>> GetAllRelations()
         {
             var response = await _httpClient.GetStringAsync("/api/Relation/relations");
             Console.WriteLine(response);
@@ -39,7 +39,21 @@ namespace DemoJira.Bussiness.APIServices
                 PreserveReferencesHandling = PreserveReferencesHandling.None,
             };
 
-            return JsonConvert.DeserializeObject<List<RelationDTO>>(response, settings);
+            return JsonConvert.DeserializeObject<List<TaskRelationshipDTO>>(response, settings);
+
+        }
+        public async Task<IEnumerable<TaskRelationshipDTO>> GetAllRelationsByTid(int tid)
+        {
+            var response = await _httpClient.GetStringAsync($"/api/Relation/relByTid/{tid}");
+            Console.WriteLine(response);
+
+            var settings = new JsonSerializerSettings
+            {
+                ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
+                PreserveReferencesHandling = PreserveReferencesHandling.None,
+            };
+
+            return JsonConvert.DeserializeObject<List<TaskRelationshipDTO>>(response, settings);
 
         }
         public async Task<bool> DeleteRelation(int id)
@@ -48,7 +62,7 @@ namespace DemoJira.Bussiness.APIServices
             return resp.IsSuccessStatusCode;
         }
 
-        public async Task<RelationDTO> GetRelationByID(int id)
+        public async Task<TaskRelationshipDTO> GetRelationByID(int id)
         {
             HttpResponseMessage resp = await _httpClient.GetAsync($"api/Relation/{id}");
             if (resp.IsSuccessStatusCode)
@@ -61,7 +75,7 @@ namespace DemoJira.Bussiness.APIServices
                     PreserveReferencesHandling = PreserveReferencesHandling.None,
                 };
 
-                _relation = JsonConvert.DeserializeObject<RelationDTO>(result, settings);
+                _relation = JsonConvert.DeserializeObject<TaskRelationshipDTO>(result, settings);
             }
             return _relation;
         }

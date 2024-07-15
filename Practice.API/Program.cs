@@ -58,6 +58,10 @@ namespace Practice.API
             builder.Services.AddScoped<ICommentRepos,CommentRepos>();
             builder.Services.AddScoped<ICommentService,CommentService>();
             builder.Services.AddScoped<IIdGeneratorService,IDGeneratorService>();
+           builder.Services.AddScoped<IFileRepos,FileRepos>();
+            builder.Services.AddScoped<IFileService,FileService>();
+            builder.Services.AddScoped<FileApiService>();
+
            // builder.Services.AddTransient<IUserService>();
             builder.Services.AddAutoMapper(typeof(TaskController));
             /*    builder.Services.AddHttpClient<ITaskService, TaskService>(client =>
@@ -76,14 +80,31 @@ namespace Practice.API
             {
                 options.AddDefaultPolicy(policy =>
                 {
-                    policy.WithOrigins("https://localhost:5120") // Your Blazor app URL
+                    policy.WithOrigins("https://localhost:5011") // Your Blazor app URL
                           .AllowAnyHeader()
                           .AllowAnyMethod()
                           .AllowAnyOrigin();
                 });
             });
 
-         
+
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("AllowSpecificOrigin",
+                    builder =>
+                    {
+                        builder.WithOrigins("http://localhost:5011") // Replace with your client's URL
+                               .AllowAnyHeader()
+                               
+                               .AllowAnyMethod();
+                    });
+            });
+
+            // In Configure method
+
+
+
+
             builder.Services.AddScoped<SiraDBContext>();
             var app = builder.Build();
 
@@ -105,6 +126,7 @@ namespace Practice.API
             app.UseBlazorFrameworkFiles();
             app.UseRouting();
             app.UseStaticFiles();
+            app.UseCors("AllowSpecificOrigin");
 
             app.MapRazorPages();
             app.MapControllers();

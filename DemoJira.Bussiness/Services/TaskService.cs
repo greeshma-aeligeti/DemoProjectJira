@@ -2,6 +2,7 @@
 using DemoJira.Bussiness.ServiceInterface;
 using DemoJira.DataAccess.Entities;
 using DemoJira.DataAccess.InterfaceForRepo;
+using DemoJira.Shared.Enums;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -11,22 +12,27 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace DemoJira.Bussiness.Services
-{ 
+{
     public class TaskService : ITaskService
     {
         private readonly ITaskRepository repository;
         //private readonly HttpClient _httpClient;
-        
+
 
         public TaskService(ITaskRepository repos)
 
         {
-           // _httpClient = httpClient;
+            // _httpClient = httpClient;
             repository = repos;
         }
 
         public async Task<MyTask> CreateTask(TaskDTO taskDTO)
         {
+            if (taskDTO.AssigneeId == taskDTO.ReporterId)
+            {
+                throw new InvalidOperationException("Assignee and Reporter cannot be the same.");
+            }
+
             MyTask task = new MyTask
             {
                 Title = taskDTO.Title,
@@ -38,29 +44,32 @@ namespace DemoJira.Bussiness.Services
                 HexId = taskDTO.HexaId,
                 ProjectId = taskDTO.ProjectId,
                 IterationId = taskDTO.IterationId,
-              //  AttachmentUrl ="",  
+                //  AttachmentUrl ="",  
                 ExpEndDate = taskDTO.EndDate,
                 ExpStartDate = taskDTO.StartDate,
                 ActEndDate = DateTime.Now,
                 ActStartDate = DateTime.Now,
                 Type = taskDTO.Type,
-                MyUserId = taskDTO.UserId,
-               // RelatedTasks = taskDTO.RelatedTasks
+                MyUserId = taskDTO.AssigneeId,
+                ReporterId=taskDTO.ReporterId
+               /* ParentTasks = taskDTO.ParentTasks.Select(MapToEntity).ToList(),
+                ChildTasks = taskDTO.ChildTasks.Select(MapToEntity).ToList()
+              */  // RelatedTasks = taskDTO.RelatedTasks
 
 
 
-                
+
             };
-           var response= await repository.CreateTask(task);
+            var response = await repository.CreateTask(task);
             return response;
-           
-           // throw new NotImplementedException();
+
+            // throw new NotImplementedException();
         }
 
         public async Task DeleteTask(int Id)
         {
-           
-            var task=await repository.GetTaskById(Id);
+
+            var task = await repository.GetTaskById(Id);
             await repository.DeleteTask(task);
             //throw new NotImplementedException();
         }
@@ -68,30 +77,32 @@ namespace DemoJira.Bussiness.Services
         public async Task<IEnumerable<TaskDTO>> GetAllTasks()
         {
 
-            var Tasks= await repository.GetAllTasks();
-            var response=  Tasks.Select(t => new TaskDTO
+            var Tasks = await repository.GetAllTasks();
+            var response = Tasks.Select(t => new TaskDTO
             {
-                Id=t.TaskId,
-                Title=t.Title,
-                HexaId=t.HexId,
+                Id = t.TaskId,
+                Title = t.Title,
+                HexaId = t.HexId,
                 TaskStatus = t.TaskStatus,
                 BugStatus = t.BugStatus,
-                Description=t.Description,
-                StoryPoint=t.StoryPoint,
-                Priority=t.Priority,
+                Description = t.Description,
+                StoryPoint = t.StoryPoint,
+                Priority = t.Priority,
                 //AttachmentUrl=t.AttachmentUrl,
-                StartDate=t.ExpStartDate,
-                UserId=t.MyUserId,
-                ActStartDate=t.ActStartDate, ActEndDate=t.ActEndDate,
-                Type=t.Type,
-               // AssignedToUserId = t.AssignedToUserId,
-                EndDate =t.ExpEndDate,
-                ProjectId=t.ProjectId,
-                IterationId =t.IterationId
+                StartDate = t.ExpStartDate,
+                AssigneeId = t.MyUserId,
+                ReporterId=t.ReporterId,
+                ActStartDate = t.ActStartDate,
+                ActEndDate = t.ActEndDate,
+                Type = t.Type,
+                // AssignedToUserId = t.AssignedToUserId,
+                EndDate = t.ExpEndDate,
+                ProjectId = t.ProjectId,
+                IterationId = t.IterationId
             });
-           return response;
-       /*     var response = await _httpClient.GetFromJsonAsync<IEnumerable<TaskDTO>>("api/tasks");
-            return response;*/
+            return response;
+            /*     var response = await _httpClient.GetFromJsonAsync<IEnumerable<TaskDTO>>("api/tasks");
+                 return response;*/
 
 
             //throw new NotImplementedException();
@@ -104,82 +115,83 @@ namespace DemoJira.Bussiness.Services
             var resp = projects.Select(p => new ProjectDTO
             {
                 Id = p.Id,
-                Name    =p.Name,
-               /* Iterations = p.Iterations.Select(c => new IterationDTO
-                {
-                    Id = c.Id,
-                    Name = c.Name,
+                Name = p.Name,
+                /* Iterations = p.Iterations.Select(c => new IterationDTO
+                 {
+                     Id = c.Id,
+                     Name = c.Name,
 
-                }).ToList()
-*/
+                 }).ToList()
+ */
             });
             return resp;
 
         }
 
-            public async Task<ProjectDTO> GetProjectById(int Id)
+        public async Task<ProjectDTO> GetProjectById(int Id)
         {
-            var Proj= await repository.GetProjectById(Id);
+            var Proj = await repository.GetProjectById(Id);
             return new ProjectDTO
             {
                 Id = Proj.Id,
                 Name = Proj.Name,
-               
-              //  IterationId=Proj.IterationId,
-               /* Iterations = Proj.Iterations.Select(c => new IterationDTO { Id = c.Id,
-                    Name = c.Name,
-                    //projID=Proj.Id
-                    
-                }).ToList()*/
+
+                //  IterationId=Proj.IterationId,
+                /* Iterations = Proj.Iterations.Select(c => new IterationDTO { Id = c.Id,
+                     Name = c.Name,
+                     //projID=Proj.Id
+
+                 }).ToList()*/
 
             };
 
-          //  throw new NotImplementedException();
+            //  throw new NotImplementedException();
         }
 
         public async Task<TaskDTO> GetTaskById(int Id)
         {
-            var Task=await repository.GetTaskById(Id);
+            var Task = await repository.GetTaskById(Id);
             if (Task == null) return null;
             return new TaskDTO
             {
 
                 Id = Task.TaskId,
                 Title = Task.Title,
-                HexaId=Task.HexId,
+                HexaId = Task.HexId,
                 StoryPoint = Task.StoryPoint,
                 TaskStatus = Task.TaskStatus,
                 BugStatus = Task.BugStatus,
                 Description = Task.Description,
-                Priority=Task.Priority,
-               // AttachmentUrl=Task.AttachmentUrl,
+                Priority = Task.Priority,
+                // AttachmentUrl=Task.AttachmentUrl,
                 StartDate = Task.ExpStartDate,
                 EndDate = Task.ExpEndDate,
                 ProjectId = Task.ProjectId,
-                UserId=Task.MyUserId,
-                Type=Task.Type,
+                AssigneeId   = Task.MyUserId,
+                ReporterId=Task.ReporterId,
+                Type = Task.Type,
                 ActStartDate = Task.ActStartDate,
                 ActEndDate = Task.ActEndDate,
-             //  AssignedToUserId=Task.AssignedToUserId,
+                //  AssignedToUserId=Task.AssignedToUserId,
                 IterationId = Task.IterationId,
-               /* Comments = Task.Comments.Select(c => new CommentDTO
-                {
-                    CommentId = c.CommentId,
-                    Content = c.Content,
-                    CreatedAt = c.CreatedAt,
-                    UserName = c.User.UserName
-                }).ToList(),
-*/
+                /* Comments = Task.Comments.Select(c => new CommentDTO
+                 {
+                     CommentId = c.CommentId,
+                     Content = c.Content,
+                     CreatedAt = c.CreatedAt,
+                     UserName = c.User.UserName
+                 }).ToList(),
+ */
 
 
             };
-           
-           // throw new NotImplementedException();
+
+            // throw new NotImplementedException();
         }
 
         public async Task<TaskDTO> UpdateTask(int Id, TaskDTO taskDTO)
         {
-            var existingTask=await repository.GetTaskById(Id);
+            var existingTask = await repository.GetTaskById(Id);
             if (existingTask == null) return null;
 
             //existingTask.TaskId = taskDTO.Id;
@@ -190,23 +202,24 @@ namespace DemoJira.Bussiness.Services
             existingTask.TaskStatus = taskDTO.TaskStatus;
             existingTask.StoryPoint = taskDTO.StoryPoint;
             existingTask.BugStatus = taskDTO.BugStatus;
-           // existingTask.AttachmentUrl = taskDTO.AttachmentUrl;
+            // existingTask.AttachmentUrl = taskDTO.AttachmentUrl;
             existingTask.Priority = taskDTO.Priority;
             existingTask.ExpStartDate = taskDTO.StartDate;
-            existingTask.MyUserId = taskDTO.UserId;
+            existingTask.MyUserId = taskDTO.AssigneeId;
+            existingTask.ReporterId=taskDTO.ReporterId;
             existingTask.Type = taskDTO.Type;
             existingTask.ActStartDate = taskDTO.ActStartDate;
             existingTask.ActEndDate = taskDTO.ActEndDate;
-           // existingTask.AssignedToUserId = taskDTO.AssignedToUserId;
-            existingTask.ExpEndDate= taskDTO.EndDate;
-            
+            // existingTask.AssignedToUserId = taskDTO.AssignedToUserId;
+            existingTask.ExpEndDate = taskDTO.EndDate;
+
             await repository.UpdateTask(existingTask);
             return taskDTO;
 
 
 
 
-         //   throw new NotImplementedException();
+            //   throw new NotImplementedException();
         }
 
         public async Task<IEnumerable<IterationDTO>> GetAllIterations()
@@ -216,40 +229,40 @@ namespace DemoJira.Bussiness.Services
             {
                 Id = p.IterationId,
                 Name = p.Name,
-               projID=p.ProjId
+                projID = p.ProjId
             });
             return resp;
         }
 
-       /* public async Task<string> GetAttachmentUrl(int Id)
-        {
-            var tasks = await repository.GetAllTasks();
-            TaskDTO taskDTO = new TaskDTO();
-            string s = "";
-            foreach(var t in tasks)
-            {
-                if(t.TaskId == Id)
-                {
-                   // taskDTO = t; break; 
-                   s=t.AttachmentUrl; break;
+        /* public async Task<string> GetAttachmentUrl(int Id)
+         {
+             var tasks = await repository.GetAllTasks();
+             TaskDTO taskDTO = new TaskDTO();
+             string s = "";
+             foreach(var t in tasks)
+             {
+                 if(t.TaskId == Id)
+                 {
+                    // taskDTO = t; break; 
+                    s=t.AttachmentUrl; break;
 
-                }
-            }
-            return s;
+                 }
+             }
+             return s;
 
-            //throw new NotImplementedException();
-        }*/
+             //throw new NotImplementedException();
+         }*/
 
-       /* public async Task<TaskDTO> AddAttachmentToTask(int taskId, Attachment attachment)
-        {
-            var taskEntity = await repository.AddAttachmentToTask(taskId, attachment);
+        /* public async Task<TaskDTO> AddAttachmentToTask(int taskId, Attachment attachment)
+         {
+             var taskEntity = await repository.AddAttachmentToTask(taskId, attachment);
 
-            // Map entity to DTO
-            var taskDto = MapEntityToDto(taskEntity); // Implement this method
+             // Map entity to DTO
+             var taskDto = MapEntityToDto(taskEntity); // Implement this method
 
-            return taskDto;
-            // throw new NotImplementedException();
-        }*/
+             return taskDto;
+             // throw new NotImplementedException();
+         }*/
 
         private TaskDTO MapEntityToDto(MyTask Task1)
         {
@@ -260,7 +273,7 @@ namespace DemoJira.Bussiness.Services
                 Title = Task1.Title,
                 HexaId = Task1.HexId,
                 TaskStatus = Task1.TaskStatus,
-                BugStatus   = Task1.BugStatus,
+                BugStatus = Task1.BugStatus,
                 Description = Task1.Description,
                 Priority = Task1.Priority,
                 StoryPoint = Task1.StoryPoint,
@@ -268,7 +281,8 @@ namespace DemoJira.Bussiness.Services
                 StartDate = Task1.ExpStartDate,
                 EndDate = Task1.ExpEndDate,
                 ProjectId = Task1.ProjectId,
-                UserId = Task1.MyUserId,
+                AssigneeId = Task1.MyUserId     ,
+                ReporterId=Task1.ReporterId,
                 Type = Task1.Type,
                 ActStartDate = Task1.ActStartDate,
                 ActEndDate = Task1.ActEndDate,
@@ -278,9 +292,44 @@ namespace DemoJira.Bussiness.Services
             };
         }
 
-        public Task<string> GetAttachmentUrl(int Id)
+        
+
+        public async Task AddTaskRelationshipAsync(TaskRelationshipDTO relationshipDTO)
         {
-            throw new NotImplementedException();
+            if (relationshipDTO.RelationshipType == TaskRelationshipType.Parent && await repository.IsChildOfAsync(relationshipDTO.ChildTaskId, relationshipDTO.ParentTaskId))
+            {
+                throw new InvalidOperationException("A child task cannot be a parent of its own parent.");
+            }
+
+
+            var relationship = new TaskRelationship
+            {
+                Id = relationshipDTO.Id,
+                MainTaskId = relationshipDTO.ParentTaskId,
+                RelatedTaskId = relationshipDTO.ChildTaskId,
+                RelationshipType = relationshipDTO.RelationshipType
+            };
+
+
+            await repository.AddTaskRelationshipAsync(relationship);
+
+        }
+
+        public async Task RemoveTaskRelationshipAsync(int parentTaskId, int childTaskId)
+        {
+            await repository.RemoveTaskRelationshipAsync(parentTaskId, childTaskId);
+        }
+
+        public async Task<List<TaskRelationshipDTO>> GetTaskRelationshipsAsync(int taskId)
+        {
+            var relationships = await repository.GetTaskRelationshipsAsync(taskId);
+            return relationships.Select(r => new TaskRelationshipDTO
+            {
+                Id = r.Id,
+                ParentTaskId = r.MainTaskId,
+                ChildTaskId = r.RelatedTaskId,
+                RelationshipType = r.RelationshipType
+            }).ToList();
         }
 
         /* public async Task addRelation(TaskDTO t1, TaskDTO t2)
@@ -292,5 +341,64 @@ namespace DemoJira.Bussiness.Services
              await repository.UpdateTask(task1);
             // throw new NotImplementedException();
          }*/
+        private TaskDTO MapToDTO(MyTask task)
+        {
+            return new TaskDTO
+            {
+                Id = task.TaskId,
+                Title = task.Title,
+                Description = task.Description,
+                Type = task.Type,
+                Priority = task.Priority,
+                StartDate = task.ExpStartDate,
+                EndDate = task.ExpEndDate,
+                ActEndDate = task.ActEndDate,
+                ActStartDate = task.ActStartDate,
+                ParentTasks = task.ParentTasks.Select(r => new TaskRelationshipDTO
+                {
+                    Id = r.Id,
+                    ParentTaskId = r.MainTaskId,
+                    ChildTaskId = r.RelatedTaskId,
+                    RelationshipType = r.RelationshipType,
+                    //ChildTask = new TaskDTO { Id = r.ChildTask.TaskId, Title = r.ChildTask.Title }
+                }).ToList(),
+                ChildTasks = task.ChildTasks.Select(r => new TaskRelationshipDTO
+                {
+                    Id = r.Id,
+                    ParentTaskId = r.MainTaskId,
+                    ChildTaskId = r.RelatedTaskId,
+                    RelationshipType = r.RelationshipType,
+                   // ParentTask = new TaskDTO { Id = r.ParentTask.TaskId, Title = r.ParentTask.Title }
+                }).ToList()
+            };
+        }
+
+        private MyTask MapToEntity(TaskDTO taskDTO)
+        {
+            return new MyTask
+            {
+                TaskId = taskDTO.Id,
+
+                Title = taskDTO.Title,
+                Description = taskDTO.Description,
+                Type = taskDTO.Type,
+                Priority = taskDTO.Priority,
+                ExpStartDate = taskDTO.StartDate,
+                ExpEndDate = taskDTO.EndDate,
+                ParentTasks = taskDTO.ParentTasks.Select(MapToEntity).ToList(),
+                ChildTasks = taskDTO.ChildTasks.Select(MapToEntity).ToList()
+            };
+        }
+
+        private TaskRelationship MapToEntity(TaskRelationshipDTO relationshipDTO)
+        {
+            return new TaskRelationship
+            {
+                Id = relationshipDTO.Id,
+                MainTaskId = relationshipDTO.ParentTaskId,
+                RelatedTaskId = relationshipDTO.ChildTaskId,
+                RelationshipType = relationshipDTO.RelationshipType
+            };
+        }
     }
 }

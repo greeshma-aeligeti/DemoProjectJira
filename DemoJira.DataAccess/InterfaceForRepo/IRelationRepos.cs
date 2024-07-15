@@ -9,11 +9,13 @@ namespace DemoJira.DataAccess.InterfaceForRepo
 {
     public interface IRelationRepos
     {
-        Task<TasksRelation> CreateRelation(TasksRelation relation);
-        Task<IEnumerable<TasksRelation>> GetAllRelations();
+        Task<TaskRelationship> CreateRelation(TaskRelationship relation);
+        Task<IEnumerable<TaskRelationship>> GetAllRelations();
 
-        Task DeleteRelation(TasksRelation relation);
-        Task<TasksRelation>GetRelByID(int id);
+        Task DeleteRelation(TaskRelationship relation);
+        Task<TaskRelationship>GetRelByID(int id);
+        Task<IEnumerable<TaskRelationship>> GetAllRelationsWithTaskID(int TID);
 
+        Task<bool> IsChildOfAsync(int parentTaskId, int childTaskId);
     }
 }

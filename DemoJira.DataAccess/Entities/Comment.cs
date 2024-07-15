@@ -20,7 +20,7 @@ namespace DemoJira.DataAccess.Entities
         public MyTask Task { get; set; }
 
         [ForeignKey(nameof(User))]
-        public int userId {  get; set; }
+        public int UserId {  get; set; }
         public User CmntUser { get; set; }
 
 
