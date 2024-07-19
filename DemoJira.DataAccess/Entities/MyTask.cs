@@ -11,10 +11,9 @@ namespace DemoJira.DataAccess.Entities
 {
     public class MyTask
     {
-        [Key]
-       public int TaskId { get; set; }
 
-        public string HexId {  get; set; }
+        [Key]
+        public string TaskId { get; set; }
         [Required]
         [MaxLength(40)]
         public string Title { get; set; }
@@ -40,6 +39,7 @@ namespace DemoJira.DataAccess.Entities
         public string Description {  get; set; }
 
        public PriorityLevel Priority {  get; set; }
+        public DateTime? CreatedAt { get; set; }
         public DateTime ExpStartDate { get; set; }
         public DateTime ExpEndDate { get; set; }
         public DateTime ActStartDate { get; set; }

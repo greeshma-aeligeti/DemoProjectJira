@@ -17,7 +17,7 @@ namespace DemoJira.DataAccess.Repositories
             _dbContext = dbContext;
         }
 
-        public async Task<IEnumerable<MyFile>> GetAllFilesByTaskID(int id)
+        public async Task<IEnumerable<MyFile>> GetAllFilesByTaskID(string id)
         {
             return await _dbContext.Files.Where(file => file.TaskId == id).ToListAsync();
         }

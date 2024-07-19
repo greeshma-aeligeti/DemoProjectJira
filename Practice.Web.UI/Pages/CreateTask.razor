@@ -41,7 +41,20 @@
         <div class=" col-6 ">
 
             <label for=" user" class="fw-bold">Reporter User</label>
-            <InputSelect id="user" @bind-Value="task.ReporterId" class="form-control">
+
+                <SearchableDropdown TItem="UserDTO"
+                                    TValue="int"
+                                    Items="users"
+                                    Value="@task.ReporterId"
+                                    ValueChanged="@(value => task.ReporterId = (int)value)" 
+
+                                    GetDisplayText="u => u.UserName"
+                                    GetValue="u => u.UserId"
+                                    Placeholder="Select Reporter"
+                                    />
+
+
+            @* <InputSelect id="user" @bind-Value="task.ReporterId" class="form-control">
                 <option hidden value="">Select Reporter</option>
                 @foreach (UserDTO p in users)
                 {
@@ -54,34 +67,41 @@
                 }
 
             </InputSelect>
-
+ *@
         </div>
             <div class=" col-6 ">
 
                 <label for=" user" class="fw-bold">Assign User</label>
-                <InputSelect id="user" @bind-Value="task.AssigneeId" class="form-control">
+                <SearchableDropdown TItem="UserDTO"
+                                    TValue="int"
+                                    Items="users"
+                                    Value="@task.AssigneeId"
+                                    ValueChanged="@(value => task.AssigneeId = (int)value)"
+                                    GetDisplayText="u => u.UserName"
+                                    GetValue="u => u.UserId"
+                                    Placeholder="Select Assignee" />
+
+                @* <InputSelect id="user" @bind-Value="task.AssigneeId" class="form-control">
                     <option hidden value="">Select Assignee</option>
                     @foreach (UserDTO p in users)
                     {
 
                         <option value="@p.UserId" class="d-flex flex-row align-items-center">
 
-                            <img src="https://via.placeholder.com/20" alt="icon" style="width: 20px; height: 20px; margin-right: 8px;" />
-
+@*                             <img src="https://via.placeholder.com/20" alt="icon" style="width: 20px; height: 20px; margin-right: 8px;" />
+ 
                             @p.UserName
                         </option>
                     }
 
-                </InputSelect>
+                </InputSelect> *@
 
             </div>
         </div>
 
         <div class=" d-flex flex-row p-3 mb-2 row">
 
-   @*       <FluentCalendar @bind-Value="task.StartDate"
-                   
-                        SelectMode="CalendarSelectMode.Single" /> *@
+ 
 
             <div class="col-4">
                 <label class="fw-bold" for="Type" >Type</label>
@@ -122,7 +142,6 @@
    </div>
             <div class="col-4 ">
                 <label for="status" class="fw-bold">Status</label>
-                @* <InputText id="status" @bind-Value="task.CurStatus" class="form-control" /> *@
 
                 <InputSelect id="status" class="form-control" @bind-Value="taskStatusValue" @onchange="()=>HandleStatusChange()">
                     
@@ -193,7 +212,8 @@
 
             <label for=" project" class="fw-bold">Project/Area</label>
             <InputSelect id="project"  @bind-Value="task.ProjectId" class="form-control" @onselect="FilterItr">
-                <option hidden value="">Select project</option>
+                <option hidden value="">
+                </option>
                 @foreach(ProjectDTO p in proj)
                 {
                     <option value="@p.Id">@p.Name</option>
@@ -229,16 +249,6 @@
 
 
 
-    @* <div>
-        <label for="assignedTo">Assign To:</label>
-        <select id="assignedTo" @bind="task.AssignedToUserId" class="form-control">
-            <option value="">Select a user</option>
-            @foreach (var user in users)
-            {
-                <option value="@user.UserId">@user.UserName</option>
-            }
-        </select>
-    </div> *@
     <div class="m-3 row">
         
     <button type="submit" class="btn btn-primary col-3">Create Task</button></div>
@@ -256,23 +266,16 @@
     private List<ProjectDTO> proj=new List<ProjectDTO>();
     private List<IterationDTO> Itrs = new List<IterationDTO>();
     private List<IterationDTO> filtItrs = new List<IterationDTO>();
-    // private readonly IIdGeneratorService _idGeneratorService;
     private string taskStatusValue;
-    //  private int x = 1;
     private string ItName="";
     private List<UserDTO> users = new List<UserDTO>();
     private bool flag = false;
     private EditContext editContext;
     Alert created;
-    // private string defUser = "Select User";
-
-    // private List<UserDTO> users = new List<UserDTO>();
+ 
     protected override async void OnInitialized()
     {
-        // editContext = new EditContext(task);
-        //editContext.OnFieldChanged += HandleFieldChanged;
-
-        // base.OnInitialized();
+    
         Console.WriteLine("Create task initialized");
         task.StartDate = DateTime.Now;
         task.EndDate = DateTime.Now;
@@ -285,6 +288,7 @@
 
         var users1 = await UserService.GetAllUsersAsync();
         users = users1.ToList();
+        Console.WriteLine("Users count" + users.Count);
         foreach (var i in Itrs)
         {
             if (i.projID == task.ProjectId)
@@ -293,13 +297,11 @@
             }
         }
         Console.WriteLine(proj);
-        //  var users = await UserService.GetAllUsersAsync();
 
 
     }
     private void HandleFieldChanged(object sender, FieldChangedEventArgs e)
     {
-        // Trigger validation when a field value changes
         editContext.NotifyFieldChanged(e.FieldIdentifier);
     }
 
@@ -330,7 +332,7 @@
     private async Task HandleValidSubmit()
     {
         //  task.UserId = (int)defUser;
-        task.HexaId = "";
+        task.Id = "";
         if (task.Type == TaskType.Task)
         {
             if (Enum.TryParse<MyTaskStatus>(taskStatusValue, out MyTaskStatus parsedStatus))

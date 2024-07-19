@@ -11,16 +11,16 @@ namespace DemoJira.DataAccess.InterfaceForRepo
     {
         Task<MyTask> CreateTask(MyTask task);
         Task<IEnumerable< MyTask>> GetAllTasks();
-        Task<MyTask> GetTaskById(int id);
+        Task<MyTask> GetTaskById(string id);
         Task<MyTask> UpdateTask(MyTask task);
         Task DeleteTask(MyTask task);
         Task <Project> GetProjectById(int id);
         Task<IEnumerable<Project>> GetAllProjs();
         Task<IEnumerable<Iteration>> GetIterationAll();
         Task AddTaskRelationshipAsync(TaskRelationship relationship);
-        Task RemoveTaskRelationshipAsync(int parentTaskId, int childTaskId);
-        Task<List<TaskRelationship>> GetTaskRelationshipsAsync(int taskId);
-        Task<bool> IsChildOfAsync(int parentTaskId, int childTaskId);
+        Task RemoveTaskRelationshipAsync(string parentTaskId, string childTaskId);
+        Task<List<TaskRelationship>> GetTaskRelationshipsAsync(string taskId);
+        Task<bool> IsChildOfAsync(string parentTaskId, string childTaskId);
         /// Task<MyTask> AddAttachmentToTask(int taskId, Attachment attachment);
 
     }

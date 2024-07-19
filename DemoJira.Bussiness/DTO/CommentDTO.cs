@@ -14,7 +14,7 @@ namespace DemoJira.Bussiness.DTO
         public string Content { get; set; }
         public DateTime CreatedAt { get; set; }= DateTime.Now;
         public int  UserId { get; set; }
-        public int TaskId {  get; set; }
+        public string TaskId {  get; set; }
 
     }
 }

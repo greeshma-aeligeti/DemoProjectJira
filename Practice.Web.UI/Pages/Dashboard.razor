@@ -1,86 +1,135 @@
 ﻿@page "/dashboard"
+@using DemoJira.Bussiness.APIServices
 @inject TaskAPIService TaskService
 
-<div class="container mt-5">
-    <div class="row">
-        <div class="col-md-4" >
-            <div class="card mb-3">
-                <div class="card-header bg-primary text-white">
-                    New Tasks
-                </div>
-                <div class="card-body">
-                    @foreach (var task in newTasks)
-                    {
-                        <div class="card mb-2">
-                            <div class="card-body">
-                                <h5 class="card-title">@task.Title</h5>
-                                <p class="card-text">@task.Description</p>
-                                <p class="card-text"><small class="text-muted">@task.StartDate.ToString("g")</small></p>
-                            </div>
-                        </div>
-                    }
-                </div>
-            </div>
-        </div>
+<DropContainer TItem="TaskDTO" Items="@tasks1" ItemsFilter="@((item, dropZone) => {
+        var status = GetTaskStatus(item);
+      //  Console.WriteLine($"Filtering: Item status = {status}, DropZone = {dropZone}");
+        return status == dropZone;
+    })" ItemDropped="@ItemDropped" Flex="Flex.Wrap.Grow.Is1">
+    <ChildContent>
+        @foreach (string s in new[] { "New", "InProgress", "Closed" })
+        {
+        string dropzone = s;
 
-        <div class="col-md-4" >
-            <div class="card mb-3">
-                <div class="card-header bg-warning text-dark">
-                    In-Progress Tasks
-                </div>
-                <div class="card-body">
-                    @foreach (var task in inProgressTasks)
+            <DropZone  TItem="TaskDTO" Name="@dropzone" Padding="Padding.Is3" Margin="Margin.Is3" Flex="Flex.Grow.Is1">
+                <Heading Size="HeadingSize.Is4" Margin="Margin.Is3.FromBottom" Padding="Padding.Is3" Style="font-family:'Times New Roman', Times, serif;" Class="@GetDropZoneClass(dropzone)"> @dropzone</Heading>
+                    @foreach (var task in tasks1)
+                {
+                    if (GetTaskStatus(task) == dropzone)
                     {
-                        <div class="card mb-2">
-                            <div class="card-body">
-                                <h5 class="card-title">@task.Title</h5>
-                                <p class="card-text">@task.Description</p>
-                                <p class="card-text"><small class="text-muted">@task.StartDate.ToString("g")</small></p>
-                            </div>
-                        </div>
+                        <_Draggable TItem="TaskDTO" Item="@task">
+                        <Card Shadow="Shadow.Default" Margin="Margin.Is3.OnY">
+                            <CardBody>
+                                    <h5 class="card-title">@task.Title</h5>
+                                    <p class="card-text">@task.Description</p>
+                                    <p class="card-text"><small class="text-muted">@task.StartDate.ToString("g")</small></p>
+                            </CardBody>
+                        </Card>
+                        </_Draggable>
                     }
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card mb-3">
-                <div class="card-header bg-success text-dark">
-                    Completed Tasks
-                </div>
-                <div class="card-body">
-                    @foreach (var task in completedTasks)
-                    {
-                        <div class="card mb-2">
-                            <div class="card-body">
-                                <h5 class="card-title">@task.Title</h5>
-                                <p class="card-text">@task.Description</p>
-                                <p class="card-text"><small class="text-muted">@task.StartDate.ToString("g")</small></p>
-                            </div>
-                        </div>
-                    }
-                </div>
-            </div>
-        </div>
+                }
+                </DropZone>
+        }
+    </ChildContent>
+    
+</DropContainer>
 
-        <!-- Add more columns/cards for other task statuses similarly -->
+<style>
+    .dropzone-new {
+        background-color:dodgerblue ; /* Llueight green */
+    }
 
-    </div>
-</div>
+    .dropzone-in-progress {
+        background-color: orange; /* Light yellow */
+    }
+
+    .dropzone-closed {
+        background-color: green; /* Light red */
+    }
+
+    .dropzone-default {
+        background-color: #ffffff; /* Default white */
+    }
+    .heading{
+        font-family:'Times New Roman', Times, serif;
+    }
+
+</style>
 
 @code {
-    private List<TaskDTO> newTasks = new List<TaskDTO>();
-    private List<TaskDTO> inProgressTasks = new List<TaskDTO>();
-    private List<TaskDTO> completedTasks = new List<TaskDTO>();
-    // Add more lists for other statuses
+
+    private List<TaskDTO> tasks1 = new List<TaskDTO>();
 
     protected override async Task OnInitializedAsync()
     {
-        var tasks = await TaskService.GetTasksAsync();
+        var task1 = await TaskService.GetTasksAsync();
+        tasks1 = task1.ToList();
+    }
 
-        newTasks = tasks.Where(t => t.TaskStatus == 0).ToList();
-        inProgressTasks = tasks.Where(t => t.TaskStatus.Equals(1)).ToList();
-        completedTasks = tasks.Where(t => t.TaskStatus.Equals(2)).ToList();
+    private string GetDropZoneClass(string dropZone)
+    {
+        return dropZone switch
+        {
+            "New" => "dropzone-new",
+            "InProgress" => "dropzone-in-progress",
+            "Closed" => "dropzone-closed",
+            _ => "dropzone-default"
+        };
+    }
+    private async Task ItemDropped(DraggableDroppedEventArgs<TaskDTO> dropItem)
+    {
+        try
+        {
+            if (dropItem.Item.TaskStatus.HasValue)
+            {
+                dropItem.Item.TaskStatus = Enum.Parse<MyTaskStatus>(dropItem.DropZoneName);
+            }
+            dropItem.Item.BugStatus = Enum.Parse<BugStatus>(dropItem.DropZoneName);
 
-        // Populate other status lists similarly
+            Console.WriteLine($"Task dropped: ID = {dropItem.Item.Id}, New Status = {dropItem.DropZoneName}");
+            bool response = await TaskService.UpdateTask(dropItem.Item.Id, dropItem.Item);
+            if (response)
+            {
+                Console.WriteLine($"Task ID {dropItem.Item.Id} successfully updated.");
+            }
+            else
+            {
+                Console.WriteLine($"Failed to update task ID {dropItem.Item.Id}. Status Code: {response}");
+                // Handle failed update (e.g., revert status change)
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Exception occurred while updating task ID {dropItem.Item.Id}: {ex.Message}");
+            // Handle exception (e.g., revert status change)
+        }
+    }
+
+    private string GetTaskStatus(TaskDTO task)
+    {
+        // Console.WriteLine($"GetTaskStatus called for Task ID: {task.Id}, Status: {task.TaskStatus}");
+
+        if (task.TaskStatus.HasValue)
+        {
+            return task.TaskStatus switch
+            {
+                MyTaskStatus.New => "New",
+                MyTaskStatus.InProgress => "InProgress",
+                MyTaskStatus.Closed => "Closed",
+                _ => throw new NotImplementedException(),
+            };
+        }
+        else if (task.BugStatus.HasValue)
+        {
+            return task.BugStatus switch
+            {
+                BugStatus.New => "New",
+                BugStatus.InProgress => "InProgress",
+                BugStatus.Closed => "Closed",
+                _ => throw new NotImplementedException(),
+            };
+        }
+        return null;
     }
 }

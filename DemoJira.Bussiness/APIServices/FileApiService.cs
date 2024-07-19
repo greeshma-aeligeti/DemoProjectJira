@@ -56,7 +56,7 @@ namespace DemoJira.Bussiness.APIServices
         }
 
 
-        public async Task<IEnumerable<FileDTO>> GetFilesByTID(int id)
+        public async Task<IEnumerable<FileDTO>> GetFilesByTID(string id)
         {
             var response = await _httpClient.GetStringAsync($"api/File/getByID/{id}");
             Console.WriteLine(response);

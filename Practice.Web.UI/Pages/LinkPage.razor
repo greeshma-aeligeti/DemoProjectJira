@@ -1,4 +1,4 @@
-﻿@page "/LinkTask/{fromId:int}"
+﻿@page "/LinkTask/{fromId}"
 @using System.Diagnostics
 
 @inject RelationAPIService relationService
@@ -13,7 +13,7 @@
     <Forms.DataAnnotationsValidator/>
 
     <div class="px-2 container">
-        <h3>Add Link</h3>
+        <h3>Add Link [@fromId]</h3>
 
         <div class="row">
            
@@ -35,7 +35,7 @@
                     {
                         if (t.Id == fromId)
                         {
-                            <option value="@t.Id">@t.Title (@t.HexaId)</option>
+                            <option value="@t.Id">@t.Title (@t.Id)</option>
                         }
                         
                     }
@@ -52,7 +52,7 @@
                     {
                         continue;
                     }
-                    <option value="@t.Id">@t.Title (@t.HexaId)</option>
+                    <option value="@t.Id">@t.Title (@t.Id)</option>
                 }
 
             </InputSelect>
@@ -92,16 +92,16 @@
 @code {
 
     [Parameter]
-    public int fromId{ get; set; }
+    public string fromId { get; set; }
 
     public TaskDTO FromTask = new TaskDTO();
     public List<TaskDTO> tasks = new List<TaskDTO>();
-    public int? selectedTaskId;
+    public string? selectedTaskId;
     private TaskRelationshipDTO relation = new TaskRelationshipDTO();
     private List<RelationDTO> AllRelations = new List<RelationDTO>();
     private IEnumerable<TaskRelationshipDTO> relationsByTid = new List<TaskRelationshipDTO>();
     private TaskRelationshipType? selectedRelationshipType;
-    private static int count = 1;
+    private static int count = 2;
     Alert alert;
     Alert failAlert;
     Alert addTask;
@@ -114,17 +114,20 @@
         var taskList = await TaskService.GetTasksAsync();
         tasks = taskList.ToList();
         relation.ParentTaskId = fromId;
-        relation.ChildTaskId = 0;
+        relation.ChildTaskId = "";
         // base.OnInitialized();
     }
 
     private async Task HandleValidSubmit()
     {
-        relation.Id = count;
-        relation.ParentTaskId = fromId;
-        relation.ChildTaskId = selectedTaskId.Value;
-        relation.RelationshipType = selectedRelationshipType.Value;
-
+        // relation.Id = count;
+        var rel = new TaskRelationshipDTO
+            {
+                ParentTaskId = fromId,
+                ChildTaskId = selectedTaskId,
+                RelationshipType = selectedRelationshipType.Value
+            };
+        relation = rel;
         try
         {
             var res = await relationService.CreateRelationAsync(relation);

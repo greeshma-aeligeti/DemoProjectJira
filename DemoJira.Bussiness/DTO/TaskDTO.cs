@@ -12,16 +12,15 @@ namespace DemoJira.Bussiness.DTO
     public class TaskDTO:IValidatableObject
     {
         [Key]
-        public int Id { get; set; }
-
-        public string HexaId {  get; set; }
+        public string Id  {  get; set; }
         [Required(ErrorMessage = "Title is required")]
         [MaxLength(40)]
         public string Title { get; set; }
         [Required(ErrorMessage = "Type is required")]
         public TaskType Type {  get; set; }
         public string Description { get; set; }
-      
+        public DateTime? CreatedAt { get; set; }
+
         public DateTime StartDate { get; set; }
         
         public DateTime EndDate { get; set; }

@@ -15,7 +15,7 @@ namespace DemoJira.Bussiness.ServiceInterface
         Task<CommentDTO> GetCommentAsync(int id);
         Task<IEnumerable<CommentDTO>> GetAllCommentsAsync();
 
-        Task<IEnumerable<CommentDTO>> GetAllCommentsByTID(int tID);
+        Task<IEnumerable<CommentDTO>> GetAllCommentsByTID(string tID);
 
     }
 }

@@ -10,5 +10,7 @@ namespace DemoJira.Bussiness.ServiceInterface
     {
         Task<string> GenerateNextIdAsync(string type);
 
+        Task<int> GenerateNextRelationIdAsync();
+
     }
 }

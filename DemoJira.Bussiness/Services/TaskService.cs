@@ -35,18 +35,19 @@ namespace DemoJira.Bussiness.Services
 
             MyTask task = new MyTask
             {
+                TaskId=taskDTO.Id,
                 Title = taskDTO.Title,
                 Description = taskDTO.Description,
                 TaskStatus = taskDTO.TaskStatus,
                 BugStatus = taskDTO.BugStatus,
                 StoryPoint = taskDTO.StoryPoint,
                 Priority = taskDTO.Priority,
-                HexId = taskDTO.HexaId,
                 ProjectId = taskDTO.ProjectId,
                 IterationId = taskDTO.IterationId,
                 //  AttachmentUrl ="",  
                 ExpEndDate = taskDTO.EndDate,
                 ExpStartDate = taskDTO.StartDate,
+                CreatedAt=DateTime.Now,
                 ActEndDate = DateTime.Now,
                 ActStartDate = DateTime.Now,
                 Type = taskDTO.Type,
@@ -66,7 +67,7 @@ namespace DemoJira.Bussiness.Services
             // throw new NotImplementedException();
         }
 
-        public async Task DeleteTask(int Id)
+        public async Task DeleteTask(string Id)
         {
 
             var task = await repository.GetTaskById(Id);
@@ -82,12 +83,13 @@ namespace DemoJira.Bussiness.Services
             {
                 Id = t.TaskId,
                 Title = t.Title,
-                HexaId = t.HexId,
+               // HexaId = t.HexId,
                 TaskStatus = t.TaskStatus,
                 BugStatus = t.BugStatus,
                 Description = t.Description,
                 StoryPoint = t.StoryPoint,
                 Priority = t.Priority,
+                CreatedAt=t.CreatedAt,
                 //AttachmentUrl=t.AttachmentUrl,
                 StartDate = t.ExpStartDate,
                 AssigneeId = t.MyUserId,
@@ -148,7 +150,7 @@ namespace DemoJira.Bussiness.Services
             //  throw new NotImplementedException();
         }
 
-        public async Task<TaskDTO> GetTaskById(int Id)
+        public async Task<TaskDTO> GetTaskById(string Id)
         {
             var Task = await repository.GetTaskById(Id);
             if (Task == null) return null;
@@ -157,12 +159,13 @@ namespace DemoJira.Bussiness.Services
 
                 Id = Task.TaskId,
                 Title = Task.Title,
-                HexaId = Task.HexId,
+                //HexaId = Task.HexId,
                 StoryPoint = Task.StoryPoint,
                 TaskStatus = Task.TaskStatus,
                 BugStatus = Task.BugStatus,
                 Description = Task.Description,
                 Priority = Task.Priority,
+                CreatedAt= Task.CreatedAt,
                 // AttachmentUrl=Task.AttachmentUrl,
                 StartDate = Task.ExpStartDate,
                 EndDate = Task.ExpEndDate,
@@ -189,7 +192,7 @@ namespace DemoJira.Bussiness.Services
             // throw new NotImplementedException();
         }
 
-        public async Task<TaskDTO> UpdateTask(int Id, TaskDTO taskDTO)
+        public async Task<TaskDTO> UpdateTask(string Id, TaskDTO taskDTO)
         {
             var existingTask = await repository.GetTaskById(Id);
             if (existingTask == null) return null;
@@ -234,65 +237,10 @@ namespace DemoJira.Bussiness.Services
             return resp;
         }
 
-        /* public async Task<string> GetAttachmentUrl(int Id)
-         {
-             var tasks = await repository.GetAllTasks();
-             TaskDTO taskDTO = new TaskDTO();
-             string s = "";
-             foreach(var t in tasks)
-             {
-                 if(t.TaskId == Id)
-                 {
-                    // taskDTO = t; break; 
-                    s=t.AttachmentUrl; break;
 
-                 }
-             }
-             return s;
 
-             //throw new NotImplementedException();
-         }*/
 
-        /* public async Task<TaskDTO> AddAttachmentToTask(int taskId, Attachment attachment)
-         {
-             var taskEntity = await repository.AddAttachmentToTask(taskId, attachment);
 
-             // Map entity to DTO
-             var taskDto = MapEntityToDto(taskEntity); // Implement this method
-
-             return taskDto;
-             // throw new NotImplementedException();
-         }*/
-
-        private TaskDTO MapEntityToDto(MyTask Task1)
-        {
-            return new TaskDTO
-            {
-                // Map properties as needed
-                Id = Task1.TaskId,
-                Title = Task1.Title,
-                HexaId = Task1.HexId,
-                TaskStatus = Task1.TaskStatus,
-                BugStatus = Task1.BugStatus,
-                Description = Task1.Description,
-                Priority = Task1.Priority,
-                StoryPoint = Task1.StoryPoint,
-                //AttachmentUrl = Task1.AttachmentUrl,
-                StartDate = Task1.ExpStartDate,
-                EndDate = Task1.ExpEndDate,
-                ProjectId = Task1.ProjectId,
-                AssigneeId = Task1.MyUserId     ,
-                ReporterId=Task1.ReporterId,
-                Type = Task1.Type,
-                ActStartDate = Task1.ActStartDate,
-                ActEndDate = Task1.ActEndDate,
-                //  AssignedToUserId=Task.AssignedToUserId,
-                IterationId = Task1.IterationId,
-                // Add other properties
-            };
-        }
-
-        
 
         public async Task AddTaskRelationshipAsync(TaskRelationshipDTO relationshipDTO)
         {
@@ -315,12 +263,12 @@ namespace DemoJira.Bussiness.Services
 
         }
 
-        public async Task RemoveTaskRelationshipAsync(int parentTaskId, int childTaskId)
+        public async Task RemoveTaskRelationshipAsync(string parentTaskId, string childTaskId)
         {
             await repository.RemoveTaskRelationshipAsync(parentTaskId, childTaskId);
         }
 
-        public async Task<List<TaskRelationshipDTO>> GetTaskRelationshipsAsync(int taskId)
+        public async Task<List<TaskRelationshipDTO>> GetTaskRelationshipsAsync(string taskId)
         {
             var relationships = await repository.GetTaskRelationshipsAsync(taskId);
             return relationships.Select(r => new TaskRelationshipDTO
@@ -332,73 +280,17 @@ namespace DemoJira.Bussiness.Services
             }).ToList();
         }
 
-        /* public async Task addRelation(TaskDTO t1, TaskDTO t2)
-         {
-             var task1=await repository.GetTaskById(t1.Id);
-           //  if (task1 == null) { return null; }
-             var task2 = await repository.GetTaskById(t2.Id);
-             task1.RelatedTasks.Add(task2); 
-             await repository.UpdateTask(task1);
+       /* public async Task addRelation(TaskDTO t1, TaskDTO t2)
+        {
+            var task1 = await repository.GetTaskById(t1.Id);
+            //  if (task1 == null) { return null; }
+            var task2 = await repository.GetTaskById(t2.Id);
+            task1.RelatedTasks.Add(task2);
+            await repository.UpdateTask(task1);
             // throw new NotImplementedException();
-         }*/
-        private TaskDTO MapToDTO(MyTask task)
-        {
-            return new TaskDTO
-            {
-                Id = task.TaskId,
-                Title = task.Title,
-                Description = task.Description,
-                Type = task.Type,
-                Priority = task.Priority,
-                StartDate = task.ExpStartDate,
-                EndDate = task.ExpEndDate,
-                ActEndDate = task.ActEndDate,
-                ActStartDate = task.ActStartDate,
-                ParentTasks = task.ParentTasks.Select(r => new TaskRelationshipDTO
-                {
-                    Id = r.Id,
-                    ParentTaskId = r.MainTaskId,
-                    ChildTaskId = r.RelatedTaskId,
-                    RelationshipType = r.RelationshipType,
-                    //ChildTask = new TaskDTO { Id = r.ChildTask.TaskId, Title = r.ChildTask.Title }
-                }).ToList(),
-                ChildTasks = task.ChildTasks.Select(r => new TaskRelationshipDTO
-                {
-                    Id = r.Id,
-                    ParentTaskId = r.MainTaskId,
-                    ChildTaskId = r.RelatedTaskId,
-                    RelationshipType = r.RelationshipType,
-                   // ParentTask = new TaskDTO { Id = r.ParentTask.TaskId, Title = r.ParentTask.Title }
-                }).ToList()
-            };
-        }
+        }*/
 
-        private MyTask MapToEntity(TaskDTO taskDTO)
-        {
-            return new MyTask
-            {
-                TaskId = taskDTO.Id,
 
-                Title = taskDTO.Title,
-                Description = taskDTO.Description,
-                Type = taskDTO.Type,
-                Priority = taskDTO.Priority,
-                ExpStartDate = taskDTO.StartDate,
-                ExpEndDate = taskDTO.EndDate,
-                ParentTasks = taskDTO.ParentTasks.Select(MapToEntity).ToList(),
-                ChildTasks = taskDTO.ChildTasks.Select(MapToEntity).ToList()
-            };
-        }
 
-        private TaskRelationship MapToEntity(TaskRelationshipDTO relationshipDTO)
-        {
-            return new TaskRelationship
-            {
-                Id = relationshipDTO.Id,
-                MainTaskId = relationshipDTO.ParentTaskId,
-                RelatedTaskId = relationshipDTO.ChildTaskId,
-                RelationshipType = relationshipDTO.RelationshipType
-            };
-        }
     }
 }

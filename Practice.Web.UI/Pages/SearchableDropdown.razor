@@ -1,0 +1,123 @@
+﻿@typeparam TItem
+@typeparam TValue
+
+    @* <input type="text" @bind="searchTerm" @oninput="FilterItems" class="form-control" placeholder="@Placeholder" />
+    <ul class="dropdown-menu" style="display: @(isDropdownOpen ? "block" : "none")">
+        @foreach (var item in FilteredItems)
+        {
+            <li @onclick="() => SelectItem(item)" class="dropdown-item">
+                @GetDisplayText(item)
+            </li>
+        }
+    </ul> *@
+
+   @*  <input type="text" @bind="searchTerm" @oninput="FilterItems" class="form-control" placeholder="@Placeholder" @onfocus="ShowDropdown" @onblur="HideDropdown" />
+
+    <InputSelect @bind-Value="Value" class="form-control" style="display: @(isDropdownOpen ? "block" : "none"); position: absolute;">
+        @foreach (var item in FilteredItems)
+        {
+            <option value="@GetValue(item)">
+                @GetDisplayText(item)
+            </option>
+        }
+    </InputSelect> *@
+
+<div class="dropdown" style="position: relative;">
+    <input type="text" @bind="searchTerm" @oninput="FilterItems" class="form-control" placeholder="@Placeholder" @onfocus="ShowDropdown" />
+    <div class="dropdown-menu" style="display:@(isDropdownOpen ? "block" : "none"); position: absolute; width: 100%;">
+        @foreach (var item in FilteredItems)
+        {
+            <button type="button" class="dropdown-item" @onclick="@(async () => await SelectItem(item))">
+                @GetDisplayText(item)
+            </button>
+        }
+    </div>
+</div>
+
+
+@code {
+    private TValue _value;
+    private string searchTerm = string.Empty;
+    private bool isDropdownOpen = false;
+    [Inject] private IJSRuntime JS { get; set; }
+    [Parameter]
+    public TValue Value
+    {
+        get => _value;
+        set
+        {
+            if (!EqualityComparer<TValue>.Default.Equals(_value, value))
+            {
+                _value = value;
+                ValueChanged.InvokeAsync(value);
+                StateHasChanged();
+            }
+        }
+    }
+
+    [Parameter] public EventCallback<TValue> ValueChanged { get; set; }
+    [Parameter] public List<TItem> Items { get; set; }
+    [Parameter] public Func<TItem, string> GetDisplayText { get; set; }
+    [Parameter] public Func<TItem, TValue> GetValue { get; set; }
+    [Parameter] public string Placeholder { get; set; } = "Select an option";
+
+    private IEnumerable<TItem> FilteredItems =>
+        Items.Where(item => GetDisplayText(item).Contains(searchTerm, StringComparison.OrdinalIgnoreCase));
+
+
+    private void ShowDropdown()
+    {
+        isDropdownOpen = true;
+        StateHasChanged();
+    }
+
+    private void HideDropdown()
+    {
+        // Adding a delay to ensure the selection is registered before hiding
+        Task.Delay(200).ContinueWith(_ =>
+        {
+            isDropdownOpen = false;
+            StateHasChanged();
+        });
+    }
+     /// private void PreventDropdownClose(MouseEventArgs e) <summary>
+    /// private void PreventDropdownClose(MouseEventArgs e)    //  e.PreventDefault();
+        //e.StopPropagation();
+    //}
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            JS.InvokeVoidAsync("registerDropdown", DotNetObjectReference.Create(this));
+        }
+    }
+
+    [JSInvokable]
+    public void CloseDropdown()
+    {
+        isDropdownOpen = false;
+        StateHasChanged();
+    }
+    /// </summary>
+    /// <param name="e"></param>    //{
+
+    /// </summary>
+    /// <param name="e"></param>    //{
+
+    private void FilterItems(ChangeEventArgs e)
+    {
+        searchTerm = e.Value?.ToString() ?? string.Empty;
+        isDropdownOpen = FilteredItems.Any();
+        StateHasChanged();
+    }
+
+    private async Task SelectItem(TItem item)
+    {
+        Value = GetValue(item);
+        searchTerm = GetDisplayText(item);
+        isDropdownOpen = false; // Close the dropdown
+        await ValueChanged.InvokeAsync(Value);
+        StateHasChanged();
+    }
+}

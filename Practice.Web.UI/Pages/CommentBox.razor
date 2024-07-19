@@ -1,4 +1,4 @@
-﻿@using System.Globalization
+﻿@* @using System.Globalization
 
 @inject UserAPIService UserServiceApi
 @inject CommentAPIService commentApiService
@@ -35,7 +35,8 @@
     [Parameter]
     public List<CommentDTO> Comments{ get; set; }
     [Parameter]
-    public int TaskId{ get; set; }
+    public string TaskId{ get; set; }
+
     private UserDTO user { get; set; } = new UserDTO();
     private string timeAgo;
 
@@ -77,3 +78,95 @@
 }
    
 
+ *@
+
+
+
+            @using System.Globalization
+
+@inject UserAPIService UserServiceApi
+@inject CommentAPIService commentApiService
+
+<Card class="mb-3">
+    <CardBody>
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <div class="d-flex align-items-center">
+                <div class="user-icon bg-info text-white rounded-circle d-flex justify-content-center align-items-center me-2" style="width: 30px; height: 30px;">
+                    @if (!string.IsNullOrEmpty(Username))
+                    {
+                        @Username.Substring(0, 2)
+                    }
+                </div>
+                <CardTitle class="mb-0">@Username</CardTitle>
+                </div>
+                <div class="d-flex align-items-center">
+                    <span class="text-muted me-2">@timeAgo</span>
+            </div>
+        </div>
+        <CardText class="m-3">@Content</CardText>
+        </CardBody>
+    </Card>
+
+    @code {
+    [Parameter]
+    public int Id { get; set; }
+
+    [Parameter]
+    public string Username { get; set; }
+
+    [Parameter]
+    public int UserId { get; set; }
+
+    [Parameter]
+    public string Content { get; set; }
+
+    [Parameter]
+    public DateTime CreatedAt { get; set; }
+
+    [Parameter]
+    public List<CommentDTO> Comments { get; set; } = new List<CommentDTO>();
+
+    [Parameter]
+    public string TaskId { get; set; }
+
+    private UserDTO user { get; set; } = new UserDTO();
+    private string timeAgo;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (UserId != 0)
+        {
+            user = await UserServiceApi.GetUserbyID(UserId);
+        }
+        timeAgo = GetTimeAgo(CreatedAt);
+    }
+
+    private string GetTimeAgo(DateTime dateTime)
+    {
+        var timeSpan = DateTime.UtcNow - dateTime.ToUniversalTime();
+        if (timeSpan.TotalMinutes < 1)
+            return "just now";
+        if (timeSpan.TotalMinutes < 60)
+            return $"{(int)timeSpan.TotalMinutes} min ago";
+        if (timeSpan.TotalHours < 24)
+            return $"{(int)timeSpan.TotalHours} hr{(timeSpan.TotalHours > 1 ? "s" : "")} ago";
+        if (timeSpan.TotalDays < 7)
+            return $"{(int)timeSpan.TotalDays} day{(timeSpan.TotalDays > 1 ? "s" : "")} ago";
+        return dateTime.ToString("MMM d, yyyy", CultureInfo.InvariantCulture);
+    }
+
+    private async void DeleteComment(int id)
+    {
+        bool del = await commentApiService.DeleteCommentApi(id);
+        await Reload();
+    }
+
+    private async Task Reload()
+    {
+        if (!string.IsNullOrEmpty(TaskId))
+        {
+            Comments = (await commentApiService.GetCommentsAsyncByTID(TaskId)).ToList();
+            StateHasChanged();
+        }
+    }
+}

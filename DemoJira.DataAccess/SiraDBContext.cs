@@ -22,9 +22,8 @@ namespace DemoJira.DataAccess
 
         public DbSet<MyFile> Files { get; set; }
 
-
-           public DbSet<TaskRelationship> Relations { get; set; }
-
+        public DbSet<TaskRelationship> Relations { get; set; }
+         
         public DbSet<User> NewUsers { get; set; }
         public DbSet<Comment> Comments { get; set; }
 
@@ -33,11 +32,18 @@ namespace DemoJira.DataAccess
         {
             base.OnModelCreating(modelBuilder);
 
-           /* modelBuilder.Entity<TaskRelationship>()
-       .Property(r => r.Id)
-       .ValueGeneratedOnAdd();*/
-/*            modelBuilder.Entity<TaskRelationship>()
-        .HasKey(tr => tr.Id);*/
+            /* modelBuilder.Entity<TaskRelationship>()
+        .Property(r => r.Id)
+        .ValueGeneratedOnAdd();*/
+            /*            modelBuilder.Entity<TaskRelationship>()
+                    .HasKey(tr => tr.Id);*/
+
+            modelBuilder.Entity<TaskRelationship>()
+        .HasKey(r => r.Id);
+
+            modelBuilder.Entity<TaskRelationship>()
+                .Property(r => r.Id)
+                .ValueGeneratedOnAdd();
             modelBuilder.Entity<MyTask>()
                 .HasMany(t => t.ParentTasks)
                 .WithOne(tr => tr.MainTask)

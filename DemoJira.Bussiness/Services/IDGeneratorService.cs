@@ -27,8 +27,8 @@ namespace DemoJira.Bussiness.Services
             string prefix = type == "Task" ? "TA" : "BG";
             string lastId = await _context.Tasks
                 .Where(t => t.Type == targetType)
-                .OrderByDescending(t => t.HexId)
-                .Select(t => t.HexId)
+                .OrderByDescending(t => t.TaskId)
+                .Select(t => t.TaskId)
                 .FirstOrDefaultAsync();
 
             int nextNumber = 1;
@@ -38,6 +38,13 @@ namespace DemoJira.Bussiness.Services
             }
 
             return $"{prefix}{nextNumber:D4}";
+        }
+
+        public async Task<int> GenerateNextRelationIdAsync()
+        {
+            var x = _context.Relations.Count();
+            return (x+1);
+           // throw new NotImplementedException();
         }
     }
 }

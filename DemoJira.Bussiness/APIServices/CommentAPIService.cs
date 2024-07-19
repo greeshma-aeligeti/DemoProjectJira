@@ -69,7 +69,7 @@ namespace DemoJira.Bussiness.APIServices
             return JsonConvert.DeserializeObject<List<CommentDTO>>(response, settings);
         }
 
-        public async Task<IEnumerable<CommentDTO>> GetCommentsAsyncByTID(int id)
+        public async Task<IEnumerable<CommentDTO>> GetCommentsAsyncByTID(string id)
         {
             var response = await _httpClient.GetStringAsync($"api/Comment/task/{id}");
 

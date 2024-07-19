@@ -12,8 +12,8 @@ namespace DemoJira.Bussiness.DTO
     {
         [Key]
         public int Id { get; set; } 
-        public int ParentTaskId { get; set; }
-        public int ChildTaskId { get; set; }
+        public string ParentTaskId { get; set; }
+        public string ChildTaskId { get; set; }
 
 
         public TaskRelationshipType RelationshipType { get; set; }

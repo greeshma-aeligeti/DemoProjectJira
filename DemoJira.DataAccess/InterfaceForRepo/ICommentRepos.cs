@@ -14,7 +14,7 @@ namespace DemoJira.DataAccess.InterfaceForRepo
         Task DeleteComment(Comment comment);
         Task<Comment> GetComment(int id);
         Task<IEnumerable<Comment>> GetAllComments();
-        Task<IEnumerable<Comment>> GetAllCommentsByTaskID(int tID);
+        Task<IEnumerable<Comment>> GetAllCommentsByTaskID(string tID);
 
     }
 }

@@ -79,7 +79,7 @@ namespace DemoJira.Bussiness.APIServices
             return iterationDTOs;
         }
 
-        public async Task<bool> DeleteTaskApi(int id)
+        public async Task<bool> DeleteTaskApi(string id)
         {
             HttpResponseMessage resp = await _httpClient.DeleteAsync($"/api/Task/{id}");
             return resp.IsSuccessStatusCode;
@@ -103,7 +103,7 @@ namespace DemoJira.Bussiness.APIServices
             }
             return projectDTO;
         }
-        public async Task<TaskDTO> GetTaskByID(int id)
+        public async Task<TaskDTO> GetTaskByID(string id)
         {
             HttpResponseMessage resp = await _httpClient.GetAsync($"api/Task/{id}");
             if(resp.IsSuccessStatusCode)
@@ -121,13 +121,16 @@ namespace DemoJira.Bussiness.APIServices
             return taskDTO;
         }
 
-        public async Task UpdateTask(int id, TaskDTO taskDTO)
+        public async Task<bool> UpdateTask(string id, TaskDTO taskDTO)
         {
             HttpResponseMessage rep = await _httpClient.PutAsJsonAsync($"api/Task/{id}", taskDTO);
             if (rep.IsSuccessStatusCode)
             {
                 Console.WriteLine("Success");
+                return true;
             }
+            return false;
+           
         }
 
         public async Task<TaskDTO> CreateTaskAsync(TaskDTO Task)

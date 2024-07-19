@@ -38,7 +38,16 @@ namespace DemoJira.DataAccess.Repositories
                     await _dbContext.SaveChangesAsync();
                 }
             }
+            var files = await _dbContext.Files.ToListAsync();
+            foreach (MyFile f in files)
+            {
+                if (f.TaskId == task.TaskId)
+                {
+                    _dbContext.Files.Remove(f);
+                    await _dbContext.SaveChangesAsync();
 
+                }
+            }
             var task1 = await _dbContext.Tasks
            .Include(t => t.Comments)
            .FirstOrDefaultAsync(t => t.TaskId == task.TaskId);
@@ -79,7 +88,7 @@ namespace DemoJira.DataAccess.Repositories
 
         }
 
-        public async Task<MyTask> GetTaskById(int id)
+        public async Task<MyTask> GetTaskById(string id)
         {
             var Task = from t in _dbContext.Tasks
                        where t.TaskId == id
@@ -150,7 +159,7 @@ namespace DemoJira.DataAccess.Repositories
             MyTask Sub = await GetTaskById(relationship.RelatedTaskId);
 
 
-            _dbContext.Relations.Add(relationship);
+            // _dbContext.Relations.Add(relationship);
             await _dbContext.SaveChangesAsync();
 
             if (relationship.RelationshipType.Equals(1))
@@ -169,10 +178,10 @@ namespace DemoJira.DataAccess.Repositories
             //throw new NotImplementedException();
         }
 
-        public async Task RemoveTaskRelationshipAsync(int parentTaskId, int childTaskId)
+        public async Task RemoveTaskRelationshipAsync(string parentTaskId, string childTaskId)
         {
             var relationship = await _dbContext.Relations
-            .FirstOrDefaultAsync(r => r.MainTaskId == parentTaskId && r.RelatedTaskId == childTaskId);
+            .FirstOrDefaultAsync(r => r.MainTaskId.Equals(parentTaskId) && r.RelatedTaskId.Equals(childTaskId));
             MyTask Main = await GetTaskById(parentTaskId);
             MyTask Sub = await GetTaskById(childTaskId);
 
@@ -186,16 +195,16 @@ namespace DemoJira.DataAccess.Repositories
             //throw new NotImplementedException();
         }
 
-        public async Task<List<TaskRelationship>> GetTaskRelationshipsAsync(int taskId)
+        public async Task<List<TaskRelationship>> GetTaskRelationshipsAsync(string taskId)
         {
             return await _dbContext.Relations
-           .Where(r => r.MainTaskId == taskId || r.RelatedTaskId == taskId)
+           .Where(r => r.MainTaskId.Equals(taskId) || r.RelatedTaskId.Equals(taskId))
            .ToListAsync();
         }
-        public async Task<bool> IsChildOfAsync(int parentTaskId, int childTaskId)
+        public async Task<bool> IsChildOfAsync(string parentTaskId, string childTaskId)
         {
             return await _dbContext.Relations
-                .AnyAsync(r => r.MainTaskId == parentTaskId && r.RelatedTaskId == childTaskId);
+                .AnyAsync(r => r.MainTaskId.Equals(parentTaskId) && r.RelatedTaskId.Equals(childTaskId));
         }
     }
 }

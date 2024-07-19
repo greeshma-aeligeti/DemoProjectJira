@@ -43,7 +43,7 @@ namespace DemoJira.Bussiness.Services
             };
         }
 
-        public async Task<IEnumerable<FileDTO>> GetFilesWithTaskID(int TaskID)
+        public async Task<IEnumerable<FileDTO>> GetFilesWithTaskID(string TaskID)
         {
 
             var files= await fileRepos.GetAllFilesByTaskID(TaskID);
@@ -70,7 +70,7 @@ namespace DemoJira.Bussiness.Services
             //throw new NotImplementedException();
         }
 
-        public async Task<bool> UploadFile(List<IFormFile> files, int TaskID)
+        public async Task<bool> UploadFile(List<IFormFile> files, string TaskID)
         {
             var workItem = await taskRepository.GetTaskById(TaskID);
             if (workItem == null)

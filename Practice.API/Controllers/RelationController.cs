@@ -9,15 +9,19 @@ namespace Practice.API.Controllers
     public class RelationController:ControllerBase
     {
         private readonly IRelationService _relationService;
-        public RelationController(IRelationService relationService)
+        private readonly IIdGeneratorService idGeneratorService1;
+        public RelationController(IRelationService relationService, IIdGeneratorService idGeneratorService)
         {
             _relationService = relationService;
+            idGeneratorService1=idGeneratorService;
+
         }
 
         [HttpPost]
         [Route("create")]
         public async Task<ActionResult<TaskRelationshipDTO>> CreateRelation([FromBody]  TaskRelationshipDTO relationDTO)
         {
+            relationDTO.Id = await idGeneratorService1.GenerateNextRelationIdAsync();
             var createdRelation=await _relationService.CreateRelation(relationDTO);
             return Ok(createdRelation);
         }
@@ -31,7 +35,7 @@ namespace Practice.API.Controllers
 
         [HttpGet]
         [Route("relByTid/{tid}")]
-        public async Task<ActionResult<IEnumerable<TaskRelationshipDTO>>> GetAllRelationsByTid(int tid)
+        public async Task<ActionResult<IEnumerable<TaskRelationshipDTO>>> GetAllRelationsByTid(string tid)
         {
             var rels = await _relationService.GetAllRelationsByTID(tid);
             return Ok(rels);

@@ -69,7 +69,7 @@ namespace DemoJira.Bussiness.Services
             //throw new NotImplementedException();
         }
 
-        public async Task<IEnumerable<CommentDTO>> GetAllCommentsByTID(int tID)
+        public async Task<IEnumerable<CommentDTO>> GetAllCommentsByTID(string tID)
         {
             var Comments=await _repository.GetAllCommentsByTaskID(tID);
             var resp=Comments.Select(c=> new CommentDTO

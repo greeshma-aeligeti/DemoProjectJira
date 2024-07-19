@@ -50,7 +50,7 @@ namespace Practice.API.Controllers
 
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetTaskById(int id)
+        public async Task<IActionResult> GetTaskById(string id)
         {
             // Log the received ID
             Console.WriteLine($"Received ID: {id}");
@@ -93,7 +93,7 @@ namespace Practice.API.Controllers
         [Route("CreateTask")]
         public async Task<ActionResult<TaskDTO>> CreateTask([FromBody] TaskDTO taskDTO)
         {
-            taskDTO.HexaId = await _idGeneratorService.GenerateNextIdAsync(taskDTO.Type.ToString());
+            taskDTO.Id = await _idGeneratorService.GenerateNextIdAsync(taskDTO.Type.ToString());
 
 
 
@@ -108,7 +108,7 @@ namespace Practice.API.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateTask(int id,[FromBody]TaskDTO taskDTO)
+        public async Task<IActionResult> UpdateTask(string id,[FromBody]TaskDTO taskDTO)
         {
           
             var updateTask = await _taskService.UpdateTask(id, taskDTO);
@@ -119,7 +119,7 @@ namespace Practice.API.Controllers
 
         [HttpDelete]
         [Route("{id}")]
-        public async Task<IActionResult> DeleteTask(int id)
+        public async Task<IActionResult> DeleteTask(string id)
         {
            /* var cmts = await _commentService.GetAllCommentsAsync();
             foreach (var c in cmts)
@@ -137,7 +137,7 @@ namespace Practice.API.Controllers
 
 
         [HttpPost("{taskId}/upload")]
-        public async Task<IActionResult> UploadFile(int taskId, IFormFile file)
+        public async Task<IActionResult> UploadFile(string taskId, IFormFile file)
         {
             if (file == null || file.Length == 0)
             {
@@ -180,7 +180,7 @@ namespace Practice.API.Controllers
         }*/
 
 
-        [HttpPost("add-relationship")]
+        /*[HttpPost("add-relationship")]
         public async Task<IActionResult> AddTaskRelationship([FromBody] TaskRelationshipDTO relationshipDTO)
         {
 
@@ -189,6 +189,6 @@ namespace Practice.API.Controllers
 
             return Ok("Relationship added successfully");
         }
-        
+        */
     }
 }

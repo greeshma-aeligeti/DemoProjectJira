@@ -16,7 +16,7 @@ namespace DemoJira.DataAccess.Entities
         public DateTime CreatedAt { get; set; }= DateTime.Now;
 
         [ForeignKey(nameof(MyTask))]
-        public int TaskId { get; set; }
+        public string TaskId { get; set; }
         public MyTask Task { get; set; }
 
         [ForeignKey(nameof(User))]

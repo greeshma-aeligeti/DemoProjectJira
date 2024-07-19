@@ -4,6 +4,7 @@ using DemoJira.DataAccess;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DemoJira.DataAccess.Migrations
 {
     [DbContext(typeof(SiraDBContext))]
-    partial class SiraDBContextModelSnapshot : ModelSnapshot
+    [Migration("20240715071003_id")]
+    partial class id
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -114,7 +117,7 @@ namespace DemoJira.DataAccess.Migrations
 
             modelBuilder.Entity("DemoJira.DataAccess.Entities.MyTask", b =>
                 {
-                    b.Property<string>("TaskId")
+                    b.Property<string>("Id")
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<DateTime>("ActEndDate")
@@ -125,9 +128,6 @@ namespace DemoJira.DataAccess.Migrations
 
                     b.Property<int?>("BugStatus")
                         .HasColumnType("int");
-
-                    b.Property<DateTime?>("CreatedAt")
-                        .HasColumnType("datetime2");
 
                     b.Property<string>("Description")
                         .IsRequired()
@@ -168,7 +168,7 @@ namespace DemoJira.DataAccess.Migrations
                     b.Property<int>("Type")
                         .HasColumnType("int");
 
-                    b.HasKey("TaskId");
+                    b.HasKey("Id");
 
                     b.HasIndex("IterationId");
 

@@ -19,7 +19,7 @@ namespace Practice.API.Controllers
         }
 
         [HttpGet("getByID/{id}")]
-        public async Task<IActionResult> GetFilesByTaskID(int id)
+        public async Task<IActionResult> GetFilesByTaskID(string id)
         {
             var resp=await fileService.GetFilesWithTaskID(id);
             return Ok(resp);
@@ -50,9 +50,9 @@ namespace Practice.API.Controllers
             {
                 return BadRequest("No files uploaded.");
             }
-            int ID=int.Parse(TaskID);
+           // int ID=int.Parse(TaskID);
 
-            var result = await fileService.UploadFile(files, ID);
+            var result = await fileService.UploadFile(files, TaskID);
             if (result)
             {
                 return Ok();

@@ -13,7 +13,7 @@ namespace DemoJira.Bussiness.ServiceInterface
         Task<TaskRelationship> CreateRelation(TaskRelationshipDTO relationDTO);
         Task <IEnumerable<TaskRelationshipDTO>> GetAllRelations();
         Task DeleteRelation(int id);
-        Task<IEnumerable<TaskRelationshipDTO>> GetAllRelationsByTID(int Tid);
+        Task<IEnumerable<TaskRelationshipDTO>> GetAllRelationsByTID(string Tid);
 
         Task<TaskRelationshipDTO> GetRelByID(int id);
     }

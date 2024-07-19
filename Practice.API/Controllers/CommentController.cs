@@ -31,7 +31,7 @@ namespace Practice.API.Controllers
 
         [HttpGet]
         [Route("task/{id}")]
-        public async Task<ActionResult<IEnumerable<CommentDTO>>> GetAllCommentsByTID(int id)
+        public async Task<ActionResult<IEnumerable<CommentDTO>>> GetAllCommentsByTID(string id)
         {
             var comments = await _commentService.GetAllCommentsByTID(id); 
             return Ok(comments);

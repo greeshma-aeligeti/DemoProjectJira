@@ -1,6 +1,8 @@
-﻿@page "/updatetask/{taskId:int}"
+﻿@page "/updatetask/{taskId}"
 @inject TaskAPIService TaskService
 @inject NavigationManager Navigation
+@inject CommentAPIService CmtApiService
+
 @using Microsoft.EntityFrameworkCore.Metadata.Internal
 @using System.Net.Http.Headers;
 @inject UserAPIService UserService
@@ -243,11 +245,30 @@
     </div>
 </EditForm>
 
-<CreateComment TaskId="taskId" UserId="task.AssigneeId"></CreateComment>
+<CreateComment TaskId="@task.Id" UserId="task.AssigneeId"></CreateComment>
+@* <div class="comments-list">
+
+    @foreach (CommentDTO comment in Comments)
+    {
+
+        Username = GetUsername(comment);
+        <CommentBox Id="@comment.CommentId"
+                    Username="@Username"
+                    UserId="@task.AssigneeId"
+                    Content="@comment.Content"
+                    TaskId="@task.Id"
+                    Comments="@Comments"
+                    CreatedAt="@comment.CreatedAt" />
+    }
+
+</div> *@
+
+
 
 @code {
     [Parameter]
-    public int taskId { get; set; }
+    public string taskId { get; set; }
+    List<CommentDTO> Comments = new List<CommentDTO>();
 
     private TaskDTO task = new TaskDTO();
     private List<ProjectDTO> proj = new List<ProjectDTO>();
@@ -256,10 +277,23 @@
     private string ItName = "";
     private List<UserDTO> users = new List<UserDTO>();
     private bool flag = false;
+    public string Username { get; set; }
+
     private IBrowserFile selectedFile;
     private string taskStatusValue;
 
+    public string GetUsername(CommentDTO comment)
+    {
+        foreach (var u in users)
+        {
+            if (comment.UserId == u.UserId && comment.TaskId == taskId)
+            {
+                Username = u.UserName;
+            }
+        }
+        return Username;
 
+    }
     private void HandleStatusChange()
     {
         if (task.Type == TaskType.Task)
@@ -267,6 +301,7 @@
             if (Enum.TryParse<MyTaskStatus>(taskStatusValue, out var parsedStatus))
             {
                 task.TaskStatus = parsedStatus;
+               
             }
             //task.TaskStatus = taskStatusValue;
         }
@@ -281,6 +316,8 @@
     }
     protected override async Task OnInitializedAsync()
     {
+       // Comments = (await CmtApiService.GetCommentsAsyncByTID(taskId)).ToList();
+
         var proj1 = await TaskService.GetAllProjectsAsync();
         proj = proj1.ToList();
 
@@ -326,7 +363,23 @@
 
         // await TaskService.UpdateTask(Task);
        
-       
+        if (task.Type == TaskType.Task)
+        {
+            if (Enum.TryParse<MyTaskStatus>(taskStatusValue, out var parsedStatus))
+            {
+                task.TaskStatus = parsedStatus;
+
+            }
+            //task.TaskStatus = taskStatusValue;
+        }
+        else if (task.Type == TaskType.Bug)
+        {
+            if (Enum.TryParse<BugStatus>(taskStatusValue, out var parsedStatus))
+            {
+                task.BugStatus = parsedStatus;
+            }
+            // task.BugStatus = taskStatusValue;
+        }
         await TaskService.UpdateTask(taskId,task);
         StateHasChanged();
         Navigation.NavigateTo("/");

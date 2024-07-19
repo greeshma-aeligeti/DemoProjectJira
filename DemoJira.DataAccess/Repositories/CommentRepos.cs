@@ -56,7 +56,7 @@ namespace DemoJira.DataAccess.Repositories
             //throw new NotImplementedException();
         }
 
-        public async Task<IEnumerable<Comment>> GetAllCommentsByTaskID(int tID)
+        public async Task<IEnumerable<Comment>> GetAllCommentsByTaskID(string tID)
         {
             List<Comment> allComments=new List<Comment>();
             allComments=await _dbContext.Comments.ToListAsync();

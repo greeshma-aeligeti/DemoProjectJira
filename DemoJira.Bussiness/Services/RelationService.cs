@@ -63,7 +63,7 @@ namespace DemoJira.Bussiness.Services
             //throw new NotImplementedException();
         }
 
-        public async Task<IEnumerable<TaskRelationshipDTO>> GetAllRelationsByTID(int Tid)
+        public async Task<IEnumerable<TaskRelationshipDTO>> GetAllRelationsByTID(string Tid)
         {
             var relations = await _repository.GetAllRelationsWithTaskID(Tid);
             var resp = relations.Select(r => new TaskRelationshipDTO

@@ -19,17 +19,19 @@ namespace DemoJira.DataAccess.Repositories
             _dbContext = dbContext;
             _taskRepository = taskRepository;
         }
-        public async Task<bool> IsChildOfAsync(int parentTaskId, int childTaskId)
+        public async Task<bool> IsChildOfAsync(string parentTaskId, string childTaskId)
         {
             return await _dbContext.Relations
-                .AnyAsync(r => r.MainTaskId == parentTaskId && r.RelatedTaskId == childTaskId);
+                .AnyAsync(r => r.MainTaskId.Equals(parentTaskId) && r.RelatedTaskId.Equals(childTaskId));
         }
         public async Task<TaskRelationship> CreateRelation(TaskRelationship relationship)
         {
             var existingRelationship = await _dbContext.Relations
             .FirstOrDefaultAsync(r => r.MainTaskId == relationship.MainTaskId && r.RelatedTaskId == relationship.RelatedTaskId);
+            var existingRelationship2 = await _dbContext.Relations
+                      .FirstOrDefaultAsync(r => r.RelatedTaskId == relationship.MainTaskId && r.MainTaskId == relationship.RelatedTaskId);
 
-            if (existingRelationship != null)
+            if (existingRelationship != null || existingRelationship2!=null)
             {
 
                 throw new InvalidOperationException("This relationship already exists.");
@@ -38,11 +40,6 @@ namespace DemoJira.DataAccess.Repositories
 
             MyTask Main = await _taskRepository.GetTaskById(relationship.MainTaskId);
             MyTask Sub = await _taskRepository.GetTaskById(relationship.RelatedTaskId);
-
-
-            var resp = _dbContext.Relations.Add(relationship);
-            await _dbContext.SaveChangesAsync();
-
             if (relationship.RelationshipType.Equals(1))
             {
 
@@ -53,6 +50,11 @@ namespace DemoJira.DataAccess.Repositories
             {
                 Main.ChildTasks.Add(relationship);
             }
+
+            var resp = await _dbContext.Relations.AddAsync(relationship);
+           // await _dbContext.SaveChangesAsync();
+
+           
             await _dbContext.SaveChangesAsync();
             return resp.Entity;
 
@@ -95,13 +97,13 @@ namespace DemoJira.DataAccess.Repositories
             // throw new NotImplementedException();
         }
 
-        public async Task<IEnumerable<TaskRelationship>> GetAllRelationsWithTaskID(int TID)
+        public async Task<IEnumerable<TaskRelationship>> GetAllRelationsWithTaskID(string TID)
         {
             var Relations= await _dbContext.Relations.ToListAsync();
             List<TaskRelationship> rels = new List<TaskRelationship>();
             foreach (var rel in Relations)
             {
-                if (rel.RelatedTaskId == TID || rel.MainTaskId == TID)
+                if (rel.RelatedTaskId.Equals(TID) || rel.MainTaskId.Equals(TID))
                 {
                     rels.Add(rel);
                 }

@@ -11,8 +11,8 @@ namespace DemoJira.Bussiness.ServiceInterface
 {
     public interface IFileService
     {
-        Task<bool> UploadFile(List<IFormFile> files,int TaskID);
-        Task<IEnumerable<FileDTO>> GetFilesWithTaskID(int TaskID);
+        Task<bool> UploadFile(List<IFormFile> files, string TaskID);
+        Task<IEnumerable<FileDTO>> GetFilesWithTaskID(string TaskID);
         Task<FileDTO> GetFileById(int fileId);
     }
 }

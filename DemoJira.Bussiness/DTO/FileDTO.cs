@@ -21,7 +21,7 @@ namespace DemoJira.Bussiness.DTO
         public long Size { get; set; }
         public DateTime UploadTime { get; set; }
 
-        public int TaskId { get; set; }
+        public string TaskId { get; set; }
 
         [ForeignKey(nameof(TaskId))]
         public MyTask AttachedToTask { get; set; }

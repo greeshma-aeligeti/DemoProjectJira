@@ -68,7 +68,7 @@ else{
 
     </style>
 
-    <div class="filter-section">
+    @* <div class="filter-section">
         <button class="btn btn-primary" @onclick="()=>CreateNavigate()">Create</button>
         <input type="text" placeholder="Search by name"  @bind="nameFilter" />
         <InputSelect class="form-control" @onselectionchange="()=>ApplyFiltersAndSort()" @bind-Value="selectedSortOption">
@@ -80,8 +80,20 @@ else{
             <!-- Add more options as needed -->
         </InputSelect>
         <button class="btn btn-outline-dark" @onclick="()=>ApplyFiltersAndSort()">Apply</button>
+    </div> *@
+  <div class="filter-section">
+    <button class="btn btn-primary" @onclick="CreateNavigate">Create</button>
+    
+    <input type="text" placeholder="Search by name" @bind="nameFilter" @onblur="()=>ApplyFiltersAndSort()"  />
+    <i class="bi bi-search"></i>
+    <InputSelect class="form-control" @onblur="()=>ApplyFiltersAndSort()" @bind-Value="selectedSortOption">
+        <option hidden value="">Sort by</option>
+        <option value="Name">Name</option>
+        <option value="Type">Type</option>
+        <option value="Status">Status</option>
+        <!-- Add more options as needed -->
+    </InputSelect>
     </div>
-  
 
 
 
@@ -94,13 +106,15 @@ else{
     <Table class="table table-striped-columns" style="min-width:max-content">
         <TableHeader >
             <TableRow>
-                <TableHeaderCell>Id</TableHeaderCell>
+                <TableHeaderCell>ID</TableHeaderCell>
                 <TableHeaderCell>Name</TableHeaderCell>
                 <TableHeaderCell>Type</TableHeaderCell>
                 <TableHeaderCell>Description</TableHeaderCell>
                 <TableHeaderCell>Reporter</TableHeaderCell>
 
                 <TableHeaderCell>Assignee</TableHeaderCell>
+                                <TableHeaderCell>Created At</TableHeaderCell>
+
                 <TableHeaderCell> Status</TableHeaderCell>
                 <TableHeaderCell> Story Points</TableHeaderCell>
 
@@ -115,7 +129,7 @@ else{
                 @foreach (var task in filteredTasks)
             {
                 <TableRow class="p-2">
-                    <TableRowCell>@task.HexaId</TableRowCell>
+                    <TableRowCell>@task.Id</TableRowCell>
                      <TableRowCell>@task.Title</TableRowCell>
                      <TableRowCell>@task.Type</TableRowCell>
                      <TableRowCell>@task.Description</TableRowCell>
@@ -135,7 +149,10 @@ else{
                             <TableRowCell>@u.UserName</TableRowCell>
                         }
                     }
+                    <TableRowCell> @task.CreatedAt?.ToString("dd-MM-yyyy")</TableRowCell>
                   
+@*                                         <TableRowCell> @string.Format("{0:yyyy-MM-dd}", task.CreatedAt) </TableRowCell>
+ *@
                     @if (task.Type.ToString() == "Task")
                     {
                         <TableRowCell>@task.TaskStatus</TableRowCell>
@@ -196,13 +213,12 @@ else{
     private IterationDTO[] itrs;
     Alert alert;
     Alert failAlert;
-
     private string nameFilter = string.Empty;
     private List<TaskDTO> filteredTasks ;
     private string selectedSortOption = "Name";
+  
 
-
-    private async Task DeleteTask(int id)
+    private async Task DeleteTask(string id)
     {
 
         var res=  await taskService.DeleteTaskApi(id);
@@ -221,16 +237,16 @@ else{
 
     }
 
-    private async Task UpdateTask(int id)
+    private async Task UpdateTask(string id)
     {
         Navigation.NavigateTo($"/updatetask/{id}");
 
     }
-    private async Task LinkTask(int id)
+    private async Task LinkTask(string id)
     {
         Navigation.NavigateTo($"/LinkTask/{id}");
     }
-    private async Task Attach(int id)
+    private async Task Attach(string id)
     {
         Navigation.NavigateTo($"/upload/{id}");
     }
@@ -242,6 +258,7 @@ else{
     private async Task Reload()
     {
         tasks = await taskService.GetTasksAsync();
+        filteredTasks=tasks.ToList();
         StateHasChanged();
 
     }
@@ -254,6 +271,7 @@ else{
         if (!string.IsNullOrWhiteSpace(nameFilter))
         {
             filteredTasks = filteredTasks.Where(t => t.Title.Contains(nameFilter, StringComparison.OrdinalIgnoreCase)).ToList();
+            StateHasChanged();
         }
 
         // Apply sorting
@@ -269,6 +287,7 @@ else{
                 filteredTasks = filteredTasks.OrderBy(t => t.TaskStatus).ToList();
                 break;
                 // Add more cases as needed
+            StateHasChanged();
         }
     }
 
@@ -291,6 +310,7 @@ else{
                 proj = (await taskService.GetAllProjectsAsync()).ToArray();
                 itrs = (await taskService.GetAllIterations()).ToArray();
                 users = (await userService.GetAllUsersAsync()).ToArray();
+                
                await ApplyFiltersAndSort();
 
             }

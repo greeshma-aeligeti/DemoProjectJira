@@ -13,9 +13,9 @@ namespace DemoJira.DataAccess.InterfaceForRepo
         Task<IEnumerable<TaskRelationship>> GetAllRelations();
 
         Task DeleteRelation(TaskRelationship relation);
-        Task<TaskRelationship>GetRelByID(int id);
-        Task<IEnumerable<TaskRelationship>> GetAllRelationsWithTaskID(int TID);
+        Task<TaskRelationship> GetRelByID(int id);
+        Task<IEnumerable<TaskRelationship>> GetAllRelationsWithTaskID(string TID);
 
-        Task<bool> IsChildOfAsync(int parentTaskId, int childTaskId);
+        Task<bool> IsChildOfAsync(string parentTaskId, string childTaskId);
     }
 }

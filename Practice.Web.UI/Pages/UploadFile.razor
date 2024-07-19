@@ -63,8 +63,9 @@
 
 
 
-@page "/upload/{id:int}"
+@page "/upload/{id}"
 @using System.Reflection.Metadata
+  @using System.Globalization
 @using System.IO
  
 @inject HttpClient Http
@@ -89,11 +90,13 @@
     <tbody>
         @foreach (var file in files)
         {
+            timeAgo = GetTimeAgo(file.UploadTime);
             <tr>
                 <td>@file.FileName</td>
                 <td>@file.Size</td>
                 <td>@file.ContentType</td>
-                <td>@file.UploadTime.ToString("g")</td>
+
+                <td>@file.UploadTime.ToString("dd-MM-yyyy")</td>
                 <td><i class="bi bi-download" @onclick="()=>Download(file.Id)"></i></td>
 
             </tr>
@@ -105,11 +108,23 @@
     private ElementReference inputFile;
     private string statusMessage;
     private List<FileDTO> files = new List<FileDTO>();
-    [Parameter] public int id { get; set; }
+    [Parameter] public string id { get; set; }
     [Inject]
     private IJSRuntime jsRuntime { get; set; }
-
-
+    private string timeAgo;
+    private string GetTimeAgo(DateTime dateTime)
+    {
+        var timeSpan = DateTime.UtcNow - dateTime.ToUniversalTime();
+        if (timeSpan.TotalMinutes < 1)
+            return "just now";
+        if (timeSpan.TotalMinutes < 60)
+            return $"{(int)timeSpan.TotalMinutes} min ago";
+        if (timeSpan.TotalHours < 24)
+            return $"{(int)timeSpan.TotalHours} hr{(timeSpan.TotalHours > 1 ? "s" : "")} ago";
+        if (timeSpan.TotalDays < 7)
+            return $"{(int)timeSpan.TotalDays} day{(timeSpan.TotalDays > 1 ? "s" : "")} ago";
+        return dateTime.ToString("MMM d, yyyy", CultureInfo.InvariantCulture);
+    }
     private async Task UploadFiles(InputFileChangeEventArgs e)
     {
         var inputFileChangeEventArgs = e as InputFileChangeEventArgs;
@@ -167,6 +182,7 @@
     {
         var files1 = await fileUpload.GetFilesByTID(id);
         files = files1.ToList();
+       
     }
 }
 <script>

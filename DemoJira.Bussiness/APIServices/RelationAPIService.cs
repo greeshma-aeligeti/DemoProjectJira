@@ -42,7 +42,7 @@ namespace DemoJira.Bussiness.APIServices
             return JsonConvert.DeserializeObject<List<TaskRelationshipDTO>>(response, settings);
 
         }
-        public async Task<IEnumerable<TaskRelationshipDTO>> GetAllRelationsByTid(int tid)
+        public async Task<IEnumerable<TaskRelationshipDTO>> GetAllRelationsByTid(string tid)
         {
             var response = await _httpClient.GetStringAsync($"/api/Relation/relByTid/{tid}");
             Console.WriteLine(response);

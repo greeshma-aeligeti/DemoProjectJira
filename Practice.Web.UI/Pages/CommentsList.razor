@@ -1,4 +1,4 @@
-﻿@page "/comments/{TaskId:int}"
+﻿@page "/comments/{TaskId}"
 @inject CommentAPIService CommentService
 @inject UserAPIService UserService
 
@@ -24,7 +24,7 @@
 
 @code {
     [Parameter]
-    public int TaskId { get; set; }
+    public string TaskId { get; set; }
 
     public string Username{ get; set; }
     List<CommentDTO> Comments = new List<CommentDTO>();
