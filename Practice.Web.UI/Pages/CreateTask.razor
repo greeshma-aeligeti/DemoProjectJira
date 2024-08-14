@@ -1,6 +1,6 @@
 ﻿@page "/CreateTask"
 @using Microsoft.EntityFrameworkCore.Metadata.Internal
-
+@using Microsoft.AspNetCore.Components.Forms
 @inject TaskAPIService TaskService
 @inject UserAPIService UserService
 @inject NavigationManager Navigation
@@ -10,9 +10,11 @@
 <EditForm Model="task" OnValidSubmit="HandleValidSubmit">
 
     <Alert @ref="created" Color="Color.Success">Task Created Succesfully  <CloseButton /></Alert>
+    <Alert @ref="Failed" Color="Color.Danger">Task Creation Failed <CloseButton /></Alert>
 
        <DataAnnotationsValidator />
-       <Forms.ValidationSummary></Forms.ValidationSummary>
+
+    <Microsoft.AspNetCore.Components.Forms.ValidationSummary />
  
     <div class="p-3 container">
 <div class="d-flex flex-row p-3 row">
@@ -42,7 +44,9 @@
 
             <label for=" user" class="fw-bold">Reporter User</label>
 
-                <SearchableDropdown TItem="UserDTO"
+                <AutoComplete1 TItem="UserDTO" Items="@users" DisplayPropertyName="UserName" Placeholder="Select Reporter" IdPropertyName="UserId" ValueChanged="@(value => task.ReporterId = (int)value)" />
+
+      @*           <SearchableDropdown TItem="UserDTO"
                                     TValue="int"
                                     Items="users"
                                     Value="@task.ReporterId"
@@ -52,7 +56,8 @@
                                     GetValue="u => u.UserId"
                                     Placeholder="Select Reporter"
                                     />
-
+                                                    <ValidationMessage For="@(()=>task.ReporterId)" />
+ *@
 
             @* <InputSelect id="user" @bind-Value="task.ReporterId" class="form-control">
                 <option hidden value="">Select Reporter</option>
@@ -72,7 +77,11 @@
             <div class=" col-6 ">
 
                 <label for=" user" class="fw-bold">Assign User</label>
-                <SearchableDropdown TItem="UserDTO"
+
+
+                <AutoComplete1 TItem="UserDTO" Items="@users" DisplayPropertyName="UserName" Placeholder="Select Assignee" IdPropertyName="UserId" ValueChanged="@(value => task.AssigneeId = (int)value)" />
+
+               @*  <SearchableDropdown TItem="UserDTO"
                                     TValue="int"
                                     Items="users"
                                     Value="@task.AssigneeId"
@@ -80,7 +89,8 @@
                                     GetDisplayText="u => u.UserName"
                                     GetValue="u => u.UserId"
                                     Placeholder="Select Assignee" />
-
+                                                    <ValidationMessage For="@(()=>task.AssigneeId)" />
+ *@
                 @* <InputSelect id="user" @bind-Value="task.AssigneeId" class="form-control">
                     <option hidden value="">Select Assignee</option>
                     @foreach (UserDTO p in users)
@@ -111,11 +121,13 @@
 
 
                 <InputSelect class="form-control" id="Type" @bind-Value="task.Type">
+                    <option hidden value="">Select type</option>
                     @foreach (var type in Enum.GetValues(typeof(TaskType)).Cast<TaskType>())
                     {
                         <option value="@type">@type.ToString()</option>
                     }
                 </InputSelect>
+                <ValidationMessage For="@(()=>task.Type)" />
 
 
             </div>
@@ -126,8 +138,8 @@
 
 
 
-                <InputSelect class="form-control" id="priority" @bind-Value="task.Priority">
-                    <option hidden value="">Choose Priority</option>
+                <InputSelect class="form-control" id="priority" @bind-Value="task.Priority"  >
+                    <option hidden value="null">Choose Priority</option>
                     @foreach (var priority in Enum.GetValues(typeof(PriorityLevel)).Cast<PriorityLevel>())
                     {
                         <option value="@priority">@priority.ToString()</option>
@@ -137,7 +149,7 @@
 
 
 
-                <ValidationMessage For="@(()=>task.Type)" />
+                <ValidationMessage For="@(()=>task.Priority)" />
 
    </div>
             <div class="col-4 ">
@@ -198,21 +210,32 @@
 
     </div>
 
-    <div class="col-4"> 
-
-        <label for="storypoint" class="fw-bold">Story Point</label>
-        <InputNumber id="storypoint" @bind-Value="task.StoryPoint" class="form-control"/>
-
-    </div>
+            <div class="col-4">
+                <label for="storypoint" class="fw-bold">Story Point</label>
+                <InputSelect id="storypoint" @bind-Value="task.StoryPoint" class="form-control">
+                    @foreach (var number in fibonacciNumbers)
+                    {
+                        <option value="@number">@number</option>
+                    }
+                </InputSelect>
+                <ValidationMessage For="@(()=>task.StoryPoint)"/>
+            </div>
         </div>
 
 
-        <div class="m-3 ">
+        <div class="m-3 " >
 
 
             <label for=" project" class="fw-bold">Project/Area</label>
+
+
+         @*    <AutoComplete1 TItem="ProjectDTO" Items="@proj" DisplayPropertyName="Name" Placeholder="Select project..." IdPropertyName="Id" ValueChanged="@(value => task.ProjectId = (int)value)" />
+
+ *@
+
+
             <InputSelect id="project"  @bind-Value="task.ProjectId" class="form-control" @onselect="FilterItr">
-                <option hidden value="">
+                <option hidden value=0> Select project
                 </option>
                 @foreach(ProjectDTO p in proj)
                 {
@@ -226,10 +249,14 @@
             <ValidationMessage For="@(() => task.ProjectId)" />
     </div>
 
-        <div class="m-3 ">
+        <div class="m-3 " >
             <label for=" iteration" class="fw-bold">Iterations</label>
+            
+       
+@*             <AutoComplete1 TItem="IterationDTO" Items="@filtItrs" DisplayPropertyName="Name" Placeholder="Select iteration..." IdPropertyName="Id" ValueChanged="@(value => task.IterationId = (int)value)" />
+ *@
         <InputSelect id="iteration" @bind-Value="task.IterationId"  class="form-control">
-            <option hidden value="">Select iteration</option>
+            <option hidden value=0>Select iteration</option>
                 @foreach(IterationDTO i in Itrs)
                 {
                     if (i.projID == task.ProjectId)
@@ -266,16 +293,20 @@
     private List<ProjectDTO> proj=new List<ProjectDTO>();
     private List<IterationDTO> Itrs = new List<IterationDTO>();
     private List<IterationDTO> filtItrs = new List<IterationDTO>();
+
     private string taskStatusValue;
     private string ItName="";
     private List<UserDTO> users = new List<UserDTO>();
     private bool flag = false;
     private EditContext editContext;
-    Alert created;
- 
+    private Alert created;
+  private   Alert Failed;
+    private List<int> fibonacciNumbers = new List<int> { 1, 2, 3, 5, 8, 13, 21 };
+
+
     protected override async void OnInitialized()
     {
-    
+
         Console.WriteLine("Create task initialized");
         task.StartDate = DateTime.Now;
         task.EndDate = DateTime.Now;
@@ -289,13 +320,7 @@
         var users1 = await UserService.GetAllUsersAsync();
         users = users1.ToList();
         Console.WriteLine("Users count" + users.Count);
-        foreach (var i in Itrs)
-        {
-            if (i.projID == task.ProjectId)
-            {
-                filtItrs.Add(i);
-            }
-        }
+       
         Console.WriteLine(proj);
 
 
@@ -352,20 +377,28 @@
             // task.BugStatus = taskStatusValue;
         }
 
-        var res = await TaskService.CreateTaskAsync(task);
-        flag = true;
-        await created.Show();
-        StateHasChanged();
-        task.Title="";
-        task.Description="";
-        task.StartDate = DateTime.Now;
-        task.EndDate = DateTime.Now;
-        //   task.StatusId="";
-        //task.Priority =null;
-        Navigation.NavigateTo("/");
-        await Task.Delay(3000);
-        
-        flag = false;
+        try
+        {
+            var res = await TaskService.CreateTaskAsync(task);
+            flag = true;
+            await created.Show();
+            StateHasChanged();
+            task.Title = "";
+            task.Description = "";
+            task.StartDate = DateTime.Now;
+            task.EndDate = DateTime.Now;
+            //   task.StatusId="";
+            //task.Priority =null;
+            Navigation.NavigateTo("/");
+            await Task.Delay(3000);
+
+            flag = false;
+        }
+        catch(Exception e)
+        {
+           await  Failed.Show();
+
+        }
 
        // ToastService.ShowSuccess("Task Created Successfully");
 

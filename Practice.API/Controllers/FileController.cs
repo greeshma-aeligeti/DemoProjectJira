@@ -1,5 +1,6 @@
 ﻿using DemoJira.Bussiness.DTO;
 using DemoJira.Bussiness.ServiceInterface;
+using DemoJira.Bussiness.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Practice.API.Controllers
@@ -24,7 +25,13 @@ namespace Practice.API.Controllers
             var resp=await fileService.GetFilesWithTaskID(id);
             return Ok(resp);
         }
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteFile(int id)
+        {
+            await fileService.DeleteFile(id);
+            return Ok();
 
+        }
         [HttpGet("download/{fileId}")]
         public async Task<IActionResult> DownloadFile(int fileId)
         {

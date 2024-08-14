@@ -61,6 +61,33 @@ a, .btn-link {
 }
 
 
+/* Define CSS classes for different screen sizes */
+@media (max-width: 576px) {
+    .dropzone {
+        width: 100%;
+    }
+}
+
+@media (min-width: 577px) and (max-width: 768px) {
+    .dropzone {
+        width: 30%;
+    }
+}
+
+@media (min-width: 769px) and (max-width: 992px) {
+    .dropzone {
+        width: 30%;
+    }
+}
+
+@media (min-width: 993px) {
+    .dropzone {
+        width: 33%;
+    }
+}
+
+
+
 #blazor-error-ui {
     background: lightyellow;
     bottom: 0;

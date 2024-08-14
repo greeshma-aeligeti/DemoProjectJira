@@ -48,7 +48,7 @@ namespace DemoJira.Bussiness.Services
                 ExpEndDate = taskDTO.EndDate,
                 ExpStartDate = taskDTO.StartDate,
                 CreatedAt=DateTime.Now,
-                ActEndDate = DateTime.Now,
+                ActEndDate = DateTime.Now.AddDays(1),
                 ActStartDate = DateTime.Now,
                 Type = taskDTO.Type,
                 MyUserId = taskDTO.AssigneeId,
@@ -205,6 +205,7 @@ namespace DemoJira.Bussiness.Services
             existingTask.TaskStatus = taskDTO.TaskStatus;
             existingTask.StoryPoint = taskDTO.StoryPoint;
             existingTask.BugStatus = taskDTO.BugStatus;
+
             // existingTask.AttachmentUrl = taskDTO.AttachmentUrl;
             existingTask.Priority = taskDTO.Priority;
             existingTask.ExpStartDate = taskDTO.StartDate;

@@ -1,29 +1,9 @@
 ﻿@typeparam TItem
 @typeparam TValue
 
-    @* <input type="text" @bind="searchTerm" @oninput="FilterItems" class="form-control" placeholder="@Placeholder" />
-    <ul class="dropdown-menu" style="display: @(isDropdownOpen ? "block" : "none")">
-        @foreach (var item in FilteredItems)
-        {
-            <li @onclick="() => SelectItem(item)" class="dropdown-item">
-                @GetDisplayText(item)
-            </li>
-        }
-    </ul> *@
-
-   @*  <input type="text" @bind="searchTerm" @oninput="FilterItems" class="form-control" placeholder="@Placeholder" @onfocus="ShowDropdown" @onblur="HideDropdown" />
-
-    <InputSelect @bind-Value="Value" class="form-control" style="display: @(isDropdownOpen ? "block" : "none"); position: absolute;">
-        @foreach (var item in FilteredItems)
-        {
-            <option value="@GetValue(item)">
-                @GetDisplayText(item)
-            </option>
-        }
-    </InputSelect> *@
 
 <div class="dropdown" style="position: relative;">
-    <input type="text" @bind="searchTerm" @oninput="FilterItems" class="form-control" placeholder="@Placeholder" @onfocus="ShowDropdown" />
+    <input type="text" @bind="searchTerm" @oninput="FilterItems" class="form-control" placeholder="@Placeholder" @onblur="HideDropdown" />
     <div class="dropdown-menu" style="display:@(isDropdownOpen ? "block" : "none"); position: absolute; width: 100%;">
         @foreach (var item in FilteredItems)
         {
@@ -68,7 +48,7 @@
     private void ShowDropdown()
     {
         isDropdownOpen = true;
-        StateHasChanged();
+        // StateHasChanged();
     }
 
     private void HideDropdown()
@@ -80,10 +60,7 @@
             StateHasChanged();
         });
     }
-     /// private void PreventDropdownClose(MouseEventArgs e) <summary>
-    /// private void PreventDropdownClose(MouseEventArgs e)    //  e.PreventDefault();
-        //e.StopPropagation();
-    //}
+
 
     protected override void OnAfterRender(bool firstRender)
     {
@@ -91,6 +68,7 @@
         {
             JS.InvokeVoidAsync("registerDropdown", DotNetObjectReference.Create(this));
         }
+       
     }
 
     [JSInvokable]

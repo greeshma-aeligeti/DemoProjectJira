@@ -1,5 +1,6 @@
 ﻿using DemoJira.DataAccess.Entities;
 using DemoJira.DataAccess.InterfaceForRepo;
+using DemoJira.Shared.Enums;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -26,6 +27,25 @@ namespace DemoJira.DataAccess.Repositories
         }
         public async Task<TaskRelationship> CreateRelation(TaskRelationship relationship)
         {
+            MyTask Main = await _taskRepository.GetTaskById(relationship.MainTaskId);
+            MyTask Sub = await _taskRepository.GetTaskById(relationship.RelatedTaskId);
+           
+           var existingRelations =await GetAllRelationsWithTaskID(relationship.MainTaskId);
+            foreach(var rel in existingRelations)
+            {
+                if (relationship.RelationshipType == TaskRelationshipType.Parent)
+                {
+                    if (rel.MainTaskId == relationship.MainTaskId && rel.RelationshipType==TaskRelationshipType.Parent)
+                    {
+                        throw new InvalidOperationException("Not more than one parent is allowed");
+                       // return null;
+                    }
+                }
+
+            }
+
+
+
             var existingRelationship = await _dbContext.Relations
             .FirstOrDefaultAsync(r => r.MainTaskId == relationship.MainTaskId && r.RelatedTaskId == relationship.RelatedTaskId);
             var existingRelationship2 = await _dbContext.Relations
@@ -33,14 +53,18 @@ namespace DemoJira.DataAccess.Repositories
 
             if (existingRelationship != null || existingRelationship2!=null)
             {
-
-                throw new InvalidOperationException("This relationship already exists.");
-                return null;
+                if (relationship.RelationshipType==TaskRelationshipType.RelatedTo)
+                {
+                    Console.WriteLine("Related");
+                }
+                else
+                {
+                    throw new InvalidOperationException("This relationship already exists.");
+                    return null;
+                }
             }
 
-            MyTask Main = await _taskRepository.GetTaskById(relationship.MainTaskId);
-            MyTask Sub = await _taskRepository.GetTaskById(relationship.RelatedTaskId);
-            if (relationship.RelationshipType.Equals(1))
+           if (relationship.RelationshipType.Equals(1))
             {
 
                 Main.ParentTasks.Add(relationship);

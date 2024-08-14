@@ -1,94 +1,225 @@
 ﻿@page "/LinkTask/{fromId}"
 @using System.Diagnostics
+@inject NavigationManager Navigation
+@inject IJSRuntime jsRuntime
 
 @inject RelationAPIService relationService
 @inject TaskAPIService TaskService
 @using Microsoft.EntityFrameworkCore.Metadata.Internal
 
-<Alert @ref="alert" Color="Color.Success">Task Linked Successfully   <CloseButton /></Alert>
-<Alert @ref="failAlert" Color="Color.Danger">Link already exists  <CloseButton /> </Alert>
-<Alert @ref="addTask" Color="Color.Danger">Select Task <i class="bi bi-exclamation-triangle"></i>    <CloseButton /> </Alert>
 
 <EditForm Model="relation" OnValidSubmit="HandleValidSubmit" >
-    <Forms.DataAnnotationsValidator/>
+    <Microsoft.AspNetCore.Components.Forms.ValidationSummary />
 
-    <div class="px-2 container">
-        <h3>Add Link [@fromId]</h3>
-
-        <div class="row">
+    <div class="container">
+@*         <h5>Add Link @fromId (@FromTask.Title)</h5>
+ *@
+        <div class="d-flex p-2 flex-row row">
            
+            <div class="col-6">
             <label for="rel" class="fw-bold">Relation</label>
             <InputSelect id="relationshipType" @bind-Value="selectedRelationshipType" class="form-control">
-                <option hidden value="">Select Relationship Type</option>
+                <option hidden value=0 >Select Relationship Type</option>
                 @foreach (var type in Enum.GetValues(typeof(TaskRelationshipType)).Cast<TaskRelationshipType>())
                 {
                     <option value="@type">@type.ToString()</option>
                 }
             </InputSelect>
-        </div>
+            <ValidationMessage For="@(()=>relation.RelationshipType)" />
+        </div></div>
 
-        <div class="d-flex flex-row row">
-            <div class="col-6">
-                <label for="t2" class="fw-bold">Task1</label>
-                <InputSelect class="form-control" id="t2" @bind-Value="relation.ParentTaskId">
-                    @foreach (var t in tasks)
-                    {
-                        if (t.Id == fromId)
-                        {
-                            <option value="@t.Id">@t.Title (@t.Id)</option>
-                        }
-                        
-                    }
-
-                </InputSelect>
-            </div>
+        <div class="d-flex p-2 flex-row row">
+           
         <div class="col-6">
-            <label for="t2" class="fw-bold">Task2</label>
+            <label for="t2" class="fw-bold">Target</label>
+
+                <AutoComplete2 TItem="TaskDTO" Items="@tasks" DisplayPropertyName="Title" Placeholder="Select Target" IdPropertyName="Id" ValueChangedS="@(value => selectedTaskId = (string)value)" />
+
+
+@* 
             <InputSelect class="form-control" id="t2" @bind-Value="selectedTaskId">
-                <option hidden>Select Task</option>
+                <option hidden value="">Select Task</option>
                 @foreach (var t in tasks)
                 {
-                    if (t.Id == fromId)
-                    {
-                        continue;
-                    }
-                    <option value="@t.Id">@t.Title (@t.Id)</option>
+                 
+                        <option value="@t.Id"> @t.Id (@t.Title)</option>
                 }
 
-            </InputSelect>
+            </InputSelect> *@
+
             </div>
     </div>
 
         
-    <button type="submit" class=" m-3 btn btn-primary">Create Link</button>
+    <button type="submit" class="m-2 btn btn-primary">Create Link</button>
 
 
     </div>
 </EditForm>
 
-<Table>
-    <TableHeader>
-        <TableRow>
-            <TableHeaderCell>From Task</TableHeaderCell>
-            <TableHeaderCell>To Task</TableHeaderCell>
-            <TableHeaderCell>Relation Type</TableHeaderCell>
-        </TableRow>
-    </TableHeader>
-    <TableBody>
-        @foreach(var rel in relationsByTid)
-        {
-        <TableRow>
-           <TableRowCell>
-               @rel.ParentTaskId
-           </TableRowCell>
-           <TableRowCell>@rel.ChildTaskId</TableRowCell>
-           <TableRowCell>@rel.RelationshipType.ToString()</TableRowCell>
-           </TableRow>
-        }
-        
-    </TableBody>
-</Table>
+<Alert @ref="alert" Color="Color.Success">Task Linked Successfully   <CloseButton /></Alert>
+<Alert @ref="failAlert" Color="Color.Danger">Link can't be created <CloseButton /> </Alert>
+<Alert @ref="addTask" Color="Color.Danger">Select Task <i class="bi bi-exclamation-triangle"></i>    <CloseButton /> </Alert>
+<Alert @ref="AddRelationType" Color="Color.Danger">Select relation type <i class="bi bi-exclamation-triangle"></i>    <CloseButton /> </Alert>
 
+
+@* <Div Class="m-3">
+
+
+@if (ParentStrings != null && ParentStrings.Any())
+{
+    <h3 class="category-heading">Parent Task</h3>
+    <ul>
+        
+            @foreach (var rel in ParentStrings)
+        {
+                <li @onclick="()=>NavigateToUpdate(rel)"><i class="bi bi-link "></i>  @rel</li>
+            }
+    </ul>
+}
+
+@if (childRelations != null && childRelations.Any())
+{
+        <h3 class="category-heading">Child Tasks</h3>
+
+        <ul >
+        @foreach (var rel in childRelations)
+        {
+                @if (rel.RelationshipType.ToString() == "Parent")
+                {
+                    <li @onclick="()=>NavigateToUpdate(rel.ParentTaskId)">
+                        <i class="bi bi-link "></i> @rel.ParentTaskId
+                    </li>
+                }
+                else
+                {
+                    <li @onclick="()=>NavigateToUpdate(rel.ChildTaskId)"><i class="bi bi-link me-2"></i>    @rel.ChildTaskId</li>
+
+                }
+            }
+    </ul>
+}
+
+</Div> *@
+<Accordion Class="m-3">
+    @if (parentRelations != null && parentRelations.Any())
+    {
+        <AccordionItem @bind-Visible="@accordionItem1Visible">
+            <AccordionHeader>
+                <AccordionToggle>
+                    <Heading Size="HeadingSize.Is5">
+                        <h3 class="category-heading">Parent Task</h3>
+                    </Heading>
+                </AccordionToggle>
+            </AccordionHeader>
+            <AccordionBody>
+
+                
+                <ul>
+
+                    @foreach (var rel in parentRelations)
+                    {
+                     
+                        @if (rel.ChildTaskId.Equals(fromId)) { }
+                        else
+                        {
+                            <li @onclick="()=>NavigateToUpdate(rel.ChildTaskId)"><i class="bi bi-link me-2"></i>    @rel.ChildTaskId
+                            </li>
+                        }
+                    }
+                </ul>
+            
+        </AccordionBody>
+    </AccordionItem>
+    }
+    @if (childRelations != null && childRelations.Any())
+    {
+        <AccordionItem @bind-Visible="@accordionItem2Visible">
+            <AccordionHeader>
+                <AccordionToggle>
+                    <Heading Size="HeadingSize.Is5">
+                        <h3 class="category-heading">Child Tasks</h3>
+                    </Heading>
+                </AccordionToggle>
+            </AccordionHeader>
+            <AccordionBody>
+
+                
+
+                <ul >
+                    @foreach (var rel in childRelations)
+                    {
+                        @if (rel.RelationshipType.ToString() == "Parent")
+                        {
+                            <li @onclick="()=>NavigateToUpdate(rel.ParentTaskId)">
+                                <i class="bi bi-link "></i> @rel.ParentTaskId
+                            </li>
+                        }
+                        else
+                        {
+                            <li @onclick="()=>NavigateToUpdate(rel.ChildTaskId)"><i class="bi bi-link me-2"></i>    @rel.ChildTaskId</li>
+
+                        }
+
+                    }
+                </ul>
+
+        </AccordionBody>
+    </AccordionItem>
+    }
+</Accordion>
+
+@code {
+    bool accordionItem1Visible = false;
+    bool accordionItem2Visible = false;
+    bool accordionItem3Visible = false;
+}
+
+<script>
+    function reloadPage() {
+        window.location.reload();
+    }
+</script>
+
+<style>
+
+    /* Example styling for the accordion */
+    .accordion-item {
+        margin-bottom: 10px;
+    }
+
+        .accordion-item .bi-link {
+            color: #007bff; /* Change color as needed */
+        }
+
+        .accordion-item ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+
+        .accordion-item li {
+            cursor: pointer;
+            padding: 5px 0;
+        }
+
+    .category-heading{
+        font-size:20px;
+        margin-left:5px;
+        font-weight:bold;
+
+    }
+
+    li {
+        cursor:pointer;
+        display: flex;
+        align-items: center;
+    }
+
+    i {
+        font-weight:bold;
+        margin-right: 8px; /* Space between icon and text */
+    }
+</style>
 @code {
 
     [Parameter]
@@ -96,31 +227,110 @@
 
     public TaskDTO FromTask = new TaskDTO();
     public List<TaskDTO> tasks = new List<TaskDTO>();
-    public string? selectedTaskId;
+    public string? selectedTaskId="";
     private TaskRelationshipDTO relation = new TaskRelationshipDTO();
     private List<RelationDTO> AllRelations = new List<RelationDTO>();
     private IEnumerable<TaskRelationshipDTO> relationsByTid = new List<TaskRelationshipDTO>();
-    private TaskRelationshipType? selectedRelationshipType;
+    private IEnumerable<TaskRelationshipDTO> parentRelations = new List<TaskRelationshipDTO>();
+    private IEnumerable<TaskRelationshipDTO> childRelations = new List<TaskRelationshipDTO>();
+    private IEnumerable<TaskRelationshipDTO> relatedTasks = new List<TaskRelationshipDTO>();
+
+    private TaskRelationshipType? selectedRelationshipType=0;
     private static int count = 2;
     Alert alert;
     Alert failAlert;
+    Alert AddRelationType;
     Alert addTask;
 
-    protected override async void OnInitialized()
+    private async void NavigateToUpdate(string id)
+    {
+        StateHasChanged();
+
+        Navigation.NavigateTo($"/updatetask/{id}");
+        // await  ReloadPage();
+
+    }
+    private async Task ReloadPage()
+    {
+        await jsRuntime.InvokeVoidAsync("reloadPage");
+    }
+
+
+    protected override async Task OnParametersSetAsync()
+    {
+        // Load the task details based on TaskId
+        // task = await TaskService.GetTaskById(TaskId);
+        await OnInitializedAsync();
+    }
+    protected override async Task OnInitializedAsync()
     {
         var relById = await relationService.GetAllRelationsByTid(fromId);
         relationsByTid = relById.ToList();
+
+
+        parentRelations = relationsByTid.Where(r => r.RelationshipType == TaskRelationshipType.Parent);
+        childRelations = relationsByTid.Where(r => r.RelationshipType == TaskRelationshipType.Child);
+        relatedTasks = relationsByTid.Where(r => r.RelationshipType == TaskRelationshipType.RelatedTo);
+        await Reload();
+        foreach (var rel in relationsByTid)
+        {
+
+            if (rel.ChildTaskId == fromId && rel.RelationshipType.ToString() == "Child")
+            {
+                if (parentRelations != null)
+                {
+                    // var parents = parentRelations.ToList();
+                    //parents.Add(rel);
+                    //parentRelations = parents;
+                    //  parentRelations=( relationsByTid.Where(r => r.RelationshipType == TaskRelationshipType.Child));
+                    var childs=childRelations.ToList();
+                    childs.Remove(rel);
+                    childRelations = childs;
+                }   
+            }
+
+            if (rel.ChildTaskId == fromId && rel.RelationshipType.ToString() == "Parent")
+            {
+                if (childRelations != null)
+                {
+                    var Childs = childRelations.ToList();
+                    if (!Childs.Contains(rel))
+                    {
+                        Childs.Add(rel);
+                    }
+                    childRelations = Childs;
+                    //  parentRelations=( relationsByTid.Where(r => r.RelationshipType == TaskRelationshipType.Child));
+                    var parents = parentRelations.ToList();
+                    parents.Remove(rel);
+                    parentRelations = parents;
+                }
+
+            }
+
+
+
+
+        }
         FromTask = await TaskService.GetTaskByID(fromId);
         var taskList = await TaskService.GetTasksAsync();
         tasks = taskList.ToList();
+
+        foreach(var t in tasks)
+        {
+            if (t.Id == fromId)
+            {
+                tasks.Remove(t);
+                break;
+            }
+        }
         relation.ParentTaskId = fromId;
         relation.ChildTaskId = "";
+        relation.RelationshipType=0;
         // base.OnInitialized();
     }
 
     private async Task HandleValidSubmit()
     {
-        // relation.Id = count;
         var rel = new TaskRelationshipDTO
             {
                 ParentTaskId = fromId,
@@ -128,41 +338,107 @@
                 RelationshipType = selectedRelationshipType.Value
             };
         relation = rel;
+        if (selectedRelationshipType.Value == 0)
+        {
+            await AddRelationType.Show();
+            return;
+        }
+        if (selectedTaskId.Equals(""))
+        {
+            await addTask.Show();
+            return;
+        }
         try
         {
             var res = await relationService.CreateRelationAsync(relation);
-            count = count + 1;
-            selectedRelationshipType = null;
+            selectedRelationshipType = 0;
             selectedTaskId = null;
             StateHasChanged();
             if (res != null)
             {
-                Reload();
-                alert.Show();
+                await Reload();
+                StateHasChanged();
+                await  alert.Show();
 
             }
             else
             {
-                failAlert.Show();
+                StateHasChanged();
+
+                await  failAlert.Show();
             }
 
         }
         catch(Exception ex)
         {
-            Reload();
-            failAlert.Show();
+            await Reload();
+            StateHasChanged();
+
+            await  failAlert.Show();
         }
 
         // relation.relation = "";
 
     }
-
+    private List<string> ParentStrings = new List<string>();
 
     private async Task Reload()
     {
         relationsByTid =await relationService.GetAllRelationsByTid(fromId);
-        StateHasChanged();
+        parentRelations = relationsByTid.Where(r => r.RelationshipType == TaskRelationshipType.Parent);
+        childRelations = relationsByTid.Where(r => r.RelationshipType == TaskRelationshipType.Child);
+        relatedTasks = relationsByTid.Where(r => r.RelationshipType == TaskRelationshipType.RelatedTo);
+        var parentRelationsList = parentRelations.ToList();
 
+        foreach (var rel in parentRelations)
+        {
+
+            if (rel.ChildTaskId.Equals(fromId))
+            {
+                parentRelationsList.Remove(rel);
+            }
+        }
+        parentRelations = parentRelationsList;
+        foreach (var rel in relationsByTid)
+        {
+            if (rel.ChildTaskId == fromId && rel.RelationshipType.ToString() == "Child")
+            {
+                if (parentRelations != null)
+                {
+                   // var parents = parentRelations.ToList();
+                   // parents.Add(rel);
+                    //parentRelations = parents;
+                    //  parentRelations=( relationsByTid.Where(r => r.RelationshipType == TaskRelationshipType.Child));
+                    var childs = childRelations.ToList();
+                    childs.Remove(rel);
+                    childRelations = childs;
+                }
+            }
+
+            if (rel.ChildTaskId == fromId && rel.RelationshipType.ToString() == "Parent")
+            {
+                if (childRelations != null)
+                {
+                    var Childs = childRelations.ToList();
+                    if (!Childs.Contains(rel))
+                    {
+                        Childs.Add(rel);
+                    }
+                    childRelations = Childs;
+                    //  parentRelations=( relationsByTid.Where(r => r.RelationshipType == TaskRelationshipType.Child));
+                    var parents = parentRelations.ToList();
+                    parents.Remove(rel);
+                    parentRelations = parents;
+                }
+
+            }
+
+
+
+        }
+
+
+        StateHasChanged();
     }
 
 }

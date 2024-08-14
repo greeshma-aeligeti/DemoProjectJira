@@ -42,8 +42,12 @@ namespace DemoJira.Bussiness.Services
 
         public async Task<int> GenerateNextRelationIdAsync()
         {
-            var x = _context.Relations.Count();
-            return (x+1);
+            int lastId = await _context.Relations
+           
+              .OrderByDescending(t => t.Id)
+              .Select(t => t.Id)
+              .FirstOrDefaultAsync();
+            return (lastId+1);
            // throw new NotImplementedException();
         }
     }

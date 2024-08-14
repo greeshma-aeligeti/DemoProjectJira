@@ -1,8 +1,58 @@
 ﻿@page "/dashboard"
 @using DemoJira.Bussiness.APIServices
-@inject TaskAPIService TaskService
+@inject TaskAPIService TaskService1
+@inject UserAPIService UserService1
+@inject NavigationManager Navigation
 
-<DropContainer TItem="TaskDTO" Items="@tasks1" ItemsFilter="@((item, dropZone) => {
+@using System.Collections.ObjectModel
+@using Blazorise.Bootstrap5
+@using Blazorise.Components
+
+
+<div class="overlay @(isLoading ? "show" : "")  ">
+    <div class="spinner-container">
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+</div>
+<div class="d-flex flex-row p-3 filter-section" style="padding:6px;">
+
+    <SearchBox Placeholder="Search by name" filteredTasks="@filteredTasks" tasks1="@tasks1" OnSearchChanged="HandleSearchChanged" />
+    <Dropdown Style="margin-right:15px;">
+        <DropdownToggle Color="Color.Light">
+            Select Type
+        </DropdownToggle>
+        <DropdownMenu>
+            @foreach(var type in new[] { "Task","Bug"}){
+                <DropdownItem Value="@type" Checked="@IsTypeSelected(type)" CheckedChanged="@(e => OnFilterCheckboxChanged(type, e))" ShowCheckbox>@type</DropdownItem>
+            }
+          
+        </DropdownMenu>
+    </Dropdown>
+
+
+    
+        <Dropdown>
+        <DropdownToggle Color="Color.Light"> Select Assignee </DropdownToggle>
+            <DropdownMenu>
+                @foreach (var user in Users)
+                {
+                    <DropdownItem 
+                                  Value="@user.UserId.ToString()" Checked="@IsUserSelected(user.UserId.ToString())" CheckedChanged="@(e => OnFilterUserCheckboxChanged(user.UserId.ToString(), e))" ShowCheckbox>
+                        @user.UserName
+                    </DropdownItem>
+                }
+            </DropdownMenu>
+        </Dropdown>
+    
+
+
+
+</div>
+
+
+<DropContainer @ref="drop" TItem="TaskDTO" Items="@filteredTasks" ItemsFilter="@((item, dropZone) => {
         var status = GetTaskStatus(item);
       //  Console.WriteLine($"Filtering: Item status = {status}, DropZone = {dropZone}");
         return status == dropZone;
@@ -10,20 +60,49 @@
     <ChildContent>
         @foreach (string s in new[] { "New", "InProgress", "Closed" })
         {
-        string dropzone = s;
+            string dropzone = s;
 
-            <DropZone  TItem="TaskDTO" Name="@dropzone" Padding="Padding.Is3" Margin="Margin.Is3" Flex="Flex.Grow.Is1">
-                <Heading Size="HeadingSize.Is4" Margin="Margin.Is3.FromBottom" Padding="Padding.Is3" Style="font-family:'Times New Roman', Times, serif;" Class="@GetDropZoneClass(dropzone)"> @dropzone</Heading>
-                    @foreach (var task in tasks1)
+            <DropZone TItem="TaskDTO" Style="max-width:30%; text-align:center;" Name="@dropzone" Margin="Margin.Is3" Flex="Flex.Grow.Is1">
+                <Heading Size="HeadingSize.Is4" Margin="Margin.Is3.FromBottom" Padding="Padding.Is3" Style="font-family:'Times New Roman', Times, serif;  border-radius: 5px;" Class="@GetDropZoneClass(dropzone)"> @(s.Equals("InProgress") ? "In Progress" : s)</Heading>
+                    @foreach (var task in filteredTasks)
                 {
                     if (GetTaskStatus(task) == dropzone)
                     {
                         <_Draggable TItem="TaskDTO" Item="@task">
-                        <Card Shadow="Shadow.Default" Margin="Margin.Is3.OnY">
-                            <CardBody>
-                                    <h5 class="card-title">@task.Title</h5>
-                                    <p class="card-text">@task.Description</p>
-                                    <p class="card-text"><small class="text-muted">@task.StartDate.ToString("g")</small></p>
+                        <Card  Shadow="Shadow.Default" Margin="Margin.Is3.OnY">
+                                <CardBody style="text-align:left">
+                                <div class="d-flex flex-column">
+                                    <h5 class="card-title "  style="cursor:pointer; " >
+                                        <a href="/updatetask/@task.Id">@task.Id</a>
+                                        <small class="">(@task.Title )</small>
+                                    </h5>
+                                    <Tooltip >
+                                        @if (task.Description.Length > 50)
+                                        {
+                                           <p> @task.Description.Substring(0, 50)</p>
+                                        }
+                                        else
+                                        {
+                                                <p> @task.Description</p>
+                                        }
+                                    </Tooltip>
+                                    </div>
+                                    <Divider></Divider>
+                                    <div class="d-flex flex-row justify-content-between align-items-center">
+                                        @foreach (var u in Users)
+                                        {
+                                            if (task.AssigneeId == u.UserId)
+                                            {
+                                                <div class="d-flex flex-column ms-2">
+                                                    <p class="text-muted mb-0" style="font-size:13px">Assigned to:</p>
+                                                    <p class="card-text" style="margin-top:0;">@u.UserName</p>
+                                                </div>
+                                            }
+                                        }
+                                        <p class="card-text"><small class="text-muted">@task.StartDate.ToString("g")</small></p>
+                                       
+                                    </div>
+
                             </CardBody>
                         </Card>
                         </_Draggable>
@@ -36,17 +115,84 @@
 </DropContainer>
 
 <style>
+
+
+
+
+
+    .filter-section {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 1rem;
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+        .filter-section input {
+            flex: 4;
+            padding: 0.5rem;
+            border-radius: 4px;
+            border: 1px solid #ced4da;
+        }
+    .overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(255, 255, 255, 0.8); /* Semi-transparent white */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000; /* Ensure overlay is above other content */
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        pointer-events: none;
+    }
+
+        .overlay.show {
+            opacity: 1;
+            pointer-events: auto;
+            visibility: visible;
+        }
+
+    .highlight{
+       text-decoration:underline;
+    }
+    .spinner-border {
+        width: 3rem;
+        height: 3rem;
+        border-width: 0.25em;
+        color: cadetblue;
+    }
+   /*  .dropzone {
+        background-color: #f0f0f0; /* Light gray background 
+        border: 2px dashed #cccccc; /* Light gray dashed border 
+        padding: 10px;
+        min-height: 100px;  Adjust as needed 
+        margin: 10px;
+        border-radius: 5px;  Optional, for rounded corners 
+    } */
+
+        .dropzone.dragging-over {
+            background-color: #e0e0e0; /* Slightly darker gray when dragging over */
+        }
+
     .dropzone-new {
-        background-color:dodgerblue ; /* Llueight green */
+        background-color: #26c6da;
+         /* Green */
     }
 
     .dropzone-in-progress {
-        background-color: orange; /* Light yellow */
+        background-color: #ff9800; /* Orange */
     }
 
     .dropzone-closed {
-        background-color: green; /* Light red */
+        background-color: #66bb6a; /* Cyan */
     }
+
 
     .dropzone-default {
         background-color: #ffffff; /* Default white */
@@ -55,16 +201,119 @@
         font-family:'Times New Roman', Times, serif;
     }
 
-</style>
+</style> 
 
 @code {
+    private string nameFilter = string.Empty;
 
+    //private List<TaskDTO> tasks1 = new List<TaskDTO>();
+    //private List<TaskDTO> filteredTasks = new List<TaskDTO>();
     private List<TaskDTO> tasks1 = new List<TaskDTO>();
+    private List<TaskDTO> filteredTasks = new List<TaskDTO>();
+    private List<UserDTO> Users = new List<UserDTO>();
+    private List<string> selectedFilterValues = new List<string>();
+    private List<string> selectedUserValues = new List<string>();
 
+    private  DropContainer<TaskDTO> drop;
+    private UserDTO selectedUser;
+    private string filterType = "All";
+    private bool isLoading = true;
+    private string highlightClass;
+
+    private void HandleSearchChanged(List<TaskDTO> args)
+    {
+        filteredTasks = args;
+        drop.Refresh();
+    }
+
+
+  
+    private void ApplyHighlight()
+    {
+        highlightClass = "highlight";
+    }
+
+    private void RemoveHighlight()
+    {
+        highlightClass = string.Empty;
+    }
+    private bool IsTypeSelected(string type)
+    {
+        return selectedFilterValues.Contains(type);
+    }
+
+    private bool IsUserSelected(string userId)
+    {
+        return selectedUserValues.Contains(userId);
+    }
+
+    private void OnFilterUserCheckboxChanged(string userId, bool isChecked)
+    {
+        if (isChecked)
+        {
+            if (!selectedUserValues.Contains(userId))
+            {
+                selectedUserValues.Add(userId);
+            }
+        }
+        else
+        {
+            selectedUserValues.Remove(userId);
+        }
+        ApplyFilters2();
+    }
+    private async Task UpdateTask(string id)
+    {
+        Navigation.NavigateTo($"/updatetask/{id}");
+
+    }
+    private void ApplyFilters2()
+    {
+        if (selectedUserValues.Any())
+        {
+            filteredTasks = new List<TaskDTO>(tasks1.Where(t => selectedUserValues.Contains(t.AssigneeId.ToString())));
+        }
+        else
+        {
+            filteredTasks = new List<TaskDTO>(tasks1);
+        }
+        drop.Refresh(); // Assuming drop is an instance of some component needing refresh
+        InvokeAsync(StateHasChanged);
+    }
+
+
+    private void OnFilterCheckboxChanged(string filter, bool isChecked)
+    {
+        if (isChecked)
+        {
+            if (!selectedFilterValues.Contains(filter))
+            {
+                selectedFilterValues.Add(filter);
+            }
+        }
+        else
+        {
+            selectedFilterValues.Remove(filter);
+        }
+        ApplyFilters();
+    }
+
+    private void SelectUser(UserDTO user)
+    {
+        selectedUser = user;
+        ApplyFilters2();
+    }
     protected override async Task OnInitializedAsync()
     {
-        var task1 = await TaskService.GetTasksAsync();
-        tasks1 = task1.ToList();
+        var task1 = await TaskService1.GetTasksAsync();
+
+        tasks1 = new List<TaskDTO>(task1);
+        var userss = await UserService1.GetAllUsersAsync();
+        Users = userss.ToList();
+        filteredTasks = tasks1;
+        isLoading = false;
+        //ApplyFilters();
+
     }
 
     private string GetDropZoneClass(string dropZone)
@@ -77,6 +326,29 @@
             _ => "dropzone-default"
         };
     }
+ 
+    private void ApplyFilters()
+    {
+        // filterType = e.Value?.ToString() ?? string.Empty;
+
+        if (selectedFilterValues.Count==0)
+        {
+            filteredTasks = tasks1;
+
+        }
+      
+        else
+        {
+            filteredTasks = new List<TaskDTO>(tasks1.Where(t => selectedFilterValues.Contains(t.Type.ToString())));
+        }
+        filteredTasks = new List<TaskDTO>(filteredTasks);
+        drop.Refresh();
+        InvokeAsync(StateHasChanged);
+
+        //StateHasChanged();
+    }
+
+  
     private async Task ItemDropped(DraggableDroppedEventArgs<TaskDTO> dropItem)
     {
         try
@@ -88,7 +360,7 @@
             dropItem.Item.BugStatus = Enum.Parse<BugStatus>(dropItem.DropZoneName);
 
             Console.WriteLine($"Task dropped: ID = {dropItem.Item.Id}, New Status = {dropItem.DropZoneName}");
-            bool response = await TaskService.UpdateTask(dropItem.Item.Id, dropItem.Item);
+            bool response = await TaskService1.UpdateTask(dropItem.Item.Id, dropItem.Item);
             if (response)
             {
                 Console.WriteLine($"Task ID {dropItem.Item.Id} successfully updated.");

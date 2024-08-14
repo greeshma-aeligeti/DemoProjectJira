@@ -2,12 +2,113 @@
 @inject TaskAPIService TaskService
 @inject NavigationManager Navigation
 @inject CommentAPIService CmtApiService
+@inject FileApiService fileUpload
+@inject IJSRuntime jsRuntime
 
 @using Microsoft.EntityFrameworkCore.Metadata.Internal
 @using System.Net.Http.Headers;
 @inject UserAPIService UserService
-<h3>Update Task</h3>
+<style>
+    /* Add to your CSS file */
+    .blur {
+        filter: blur(5px);
+        pointer-events: none; /* Optional: Prevent interaction with blurred elements */
+    }
+    i{
+        cursor:pointer;
+        margin-right:10px;
+    }
+    .overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(255, 255, 255, 0.8); /* Semi-transparent white */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000; /* Ensure overlay is above other content */
+        opacity: 0;
+        transition: opacity 0.3s ease;
+           pointer-events: none;
+    }
 
+        .overlay.show {
+            opacity: 1;
+               pointer-events:auto;
+               visibility:visible;
+        }
+
+    .spinner-border {
+        width: 3rem;
+        height: 3rem;
+        border-width: 0.25em;
+        color:cadetblue;
+    }
+    /* Hide the default file input text */
+    .file-input {
+        position: absolute;
+        opacity: 0;
+        height:max-content;
+        overflow: hidden;
+        width:max-content;
+      
+    }
+
+    .btn-with-file {
+        position: relative;
+        overflow: hidden;
+    }
+
+    .spinner-container {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: 100%;
+    }
+        /* Style for the file input button */
+        .btn-with-file .btn {
+            padding-right: 10px; /* Add padding to the button to make room for the file input */
+        }
+        button{
+            cursor:pointer;
+        }
+
+</style>
+
+
+<div class="overlay @(isLoading || isUploading ? "show" : "")  ">
+    <div class="spinner-container">
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        </div>
+</div>
+
+
+<div class="d-flex justify-content-between align-items-center"  style="margin-left:35px;">
+    <h3 >Update Task-@taskId</h3>
+    <!-- Buttons for attachments and links -->
+    <div class="d-flex justify-content-end align-items-center">
+       @* <button class="btn btn-primary btn-with-file  p-1">
+            <i class="bi bi-paperclip"></i>Attach File
+            <InputFile class="file-input" OnChange="UploadFiles" multiple />
+        </button>
+         *@
+      @*   @if (isUploading)
+        {
+            <div class="spinner-border" role="status">
+            </div>
+        }
+        @if (statusMessage.Equals("File Uploaded sucessfully"))
+        {
+            <i style="font-size: 2rem;"class="bi bi-check"></i>
+        } *@
+    </div>
+   
+</div>
 <EditForm Model="task" OnValidSubmit="HandleValidSubmit">
     
        <DataAnnotationsValidator />
@@ -116,14 +217,32 @@
                     {
                         @foreach (var status in Enum.GetValues(typeof(MyTaskStatus)).Cast<MyTaskStatus>())
                         {
-                            <option value="@status">@status.ToString()</option>
+                            @if (status.ToString().Equals("InProgress"))
+                            {
+                                <option value="@status">In Progress</option>
+
+                            }
+                            else
+                            {
+                                <option value="@status
+                                ">@status.ToString()
+                                </option>
+                            }
                         }
                     }
                     else if (task.Type == TaskType.Bug)
                     {
                         @foreach (var status in Enum.GetValues(typeof(BugStatus)).Cast<BugStatus>())
                         {
-                            <option value="@status">@status.ToString()</option>
+                            @if (status.ToString().Equals("InProgress"))
+                            {
+                                <option value="@status">In Progress</option>
+
+                            }
+                            else
+                            {
+                                <option value="@status">@status.ToString()</option>
+                            }
                         }
                     }
                 </InputSelect>
@@ -136,6 +255,15 @@
 
 
 
+            </div>
+            <div class="col-4">
+                <label for="storypoint" class="fw-bold">Story Point</label>
+                <InputSelect id="storypoint" @bind-Value="task.StoryPoint" class="form-control">
+                    @foreach (var number in fibonacciNumbers)
+                    {
+                        <option value="@number">@number</option>
+                    }
+                </InputSelect>
             </div>
    </div>
    <div class=" d-flex flex-row row m-2">
@@ -211,6 +339,17 @@
             </InputSelect>
             <ValidationMessage For="@(()=>task.IterationId)"/>
     </div>
+        <div class="" style="margin-top:20px; margin-left:19px">
+
+            <button type="submit" @onclick="HandleStatusChange" class="btn btn-primary col-3" style="width:max-content;">
+                Update Task
+
+            </button>
+        </div>
+
+    </div>
+</EditForm>
+
 @* 
         <div class="m-3">
             <label for="file" class="form-label fw-bold">Attachments <i class="bi bi-paperclip"></i></label><br/>
@@ -230,45 +369,313 @@
             }
         </select>
     </div> *@
-    <div class="m-3 row">
-        
-    <button type="submit" @onclick="HandleStatusChange" class="btn btn-primary col-3">Update Task</button></div>
-    <div class="align-items-center">
-    
-    @if (flag == true)
-    {
-        
-        <p class="row m-3 p-3 align-self-baseline bg-success rounded-2">Task Created Successfully</p>
-     
-    }
-    </div>
-    </div>
-</EditForm>
 
-<CreateComment TaskId="@task.Id" UserId="task.AssigneeId"></CreateComment>
-@* <div class="comments-list">
+@* <div class=" p-3" style="margin-left:12px;" role="group" aria-label="Basic radio toggle button group">
+    <input type="radio" class="btn-check" name="btnradio" id="btnradio1" autocomplete="off" value="links" @onchange="OnOptionChanged" checked>
+    <label class="btn btn-outline-primary" for="btnradio1"> Links</label>
 
-    @foreach (CommentDTO comment in Comments)
-    {
+    <input type="radio" class="btn-check" name="btnradio" id="btnradio2" value="files" @onchange="OnOptionChanged" autocomplete="off">
+    <label class="btn btn-outline-primary" for="btnradio2">Files</label>
 
-        Username = GetUsername(comment);
-        <CommentBox Id="@comment.CommentId"
-                    Username="@Username"
-                    UserId="@task.AssigneeId"
-                    Content="@comment.Content"
-                    TaskId="@task.Id"
-                    Comments="@Comments"
-                    CreatedAt="@comment.CreatedAt" />
-    }
+    <input type="radio" class="btn-check" name="btnradio" id="btnradio3" value="comments" @onchange="OnOptionChanged" autocomplete="off">
+    <label class="btn btn-outline-primary" for="btnradio3">Comments</label>
+
+   
 
 </div> *@
 
 
+<div class="container m-3 ">
+    <ul class="nav nav-tabs" id="myTab" role="tablist" >
+        <li class="nav-item" role="presentation">
+            <a class="nav-link @GetActiveClass(Tab.Links)" style="cursor:pointer" id="links-tab"  role="tab" @onclick="() => OnTabChanged(Tab.Links)">Links</a>
+        </li>
+        <li class="nav-item" role="presentation">
+            <a class="nav-link @GetActiveClass(Tab.Files)" style="cursor:pointer" id="files-tab"  role="tab" @onclick="() => OnTabChanged(Tab.Files)">Files</a>
+        </li>
+        <li class="nav-item" role="presentation">
+            <a class="nav-link @GetActiveClass(Tab.Comments)" style="cursor:pointer" id="comments-tab" role="tab" @onclick="() => OnTabChanged(Tab.Comments)">Comments</a>
+        </li>
+    </ul>
+    <div class="tab-content" style="height:500px" id="myTabContent">
+        @if (activeTab == Tab.Links)
+        {
+            <div class="tab-pane fade show active" id="links" role="tabpanel" aria-labelledby="links-tab">
+                <!-- Links Content -->
+        <LinkPage fromId="@taskId"></LinkPage>
+            </div>
+        }
+        else if (activeTab == Tab.Files)
+        {
+            <div class="tab-pane fade show active" id="files" role="tabpanel" aria-labelledby="files-tab">
+                <!-- Files Content -->
+
+                <div style=" margin-left:19px">
+                    <div class="d-flex justify-content-between align-items-center">
+                        @if (files.Any())
+                        {
+                            <h5 class="fw-bold"> Files uploaded</h5>
+        
+        }
+                else{
+                <h5 class="fw-bold">Upload Files</h5>}
+                <div class="d-flex flex-column align-items-start">
+                    <div>
+                        <div class="p-3 d-flex flex-row align-items-center">
+
+                            <InputFile OnChange="UploadFiles" multiple />
+@* 
+                            <button class="btn btn-primary btn-with-file  p-1">
+                                <i class="bi bi-paperclip"></i>Attach File
+                                <InputFile class="file-input" OnChange="UploadFiles"  />
+                            </button> *@
+                        </div>
+                        @if (showStatusMessage)
+                        {
+                            <p style="color:red; animation-timing-function:ease-in">File exceeds Limit 20MB</p>
+                        }
+                    </div>
+
+
+                </div>
+            </div>
+
+            @if (files.Count > 0)
+            {
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Size</th>
+                            <th>ContentType</th>
+                            <th>Date Attached</th>
+                            <th>Actions</th>
+
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var file in files)
+                        {
+                            // timeAgo = GetTimeAgo(file.UploadTime);
+                            <tr>
+                                <td>@file.FileName</td>
+                            <td>@BytesToString(@file.Size)</td>
+                            <td>@file.ContentType</td>
+
+                            <td>@file.UploadTime.ToString("dd-MM-yyyy")</td>
+                            <td>
+                                <i class="bi bi-download" @onclick="()=>Download(file.Id)"></i>
+                                <i class="bi bi-trash" @onclick="()=>DeleteFile(file.Id)"></i>
+                            </td>
+
+                        </tr>
+                    }
+                </tbody>
+                </table>
+            }
+            else
+            {
+                <p class="text-muted" style="text-align:center;">No Files</p>
+            }
+        </div>
+
+            </div>
+        }
+        else if (activeTab == Tab.Comments)
+        {
+            <div class="tab-pane fade show active" id="comments" role="tabpanel" aria-labelledby="comments-tab">
+                <!-- Comments Content -->
+                <CreateComment TaskId="@task.Id" UserId="task.AssigneeId"></CreateComment>
+            </div>
+        }
+    </div>
+</div>
+@* <div style="margin-left:13px; height:500px">
+
+    @if (selectedOption == "links")
+    {
+        <LinkPage fromId="@taskId"></LinkPage>
+    }
+    else if (selectedOption == "files")
+    {
+
+
+        <div style=" margin-left:19px">
+            <div class="d-flex justify-content-between align-items-center">
+                <h4>Files uploaded</h4>
+                <div class="d-flex flex-column align-items-start">
+                    <div>
+                        <div class="p-3 d-flex flex-row align-items-center">
+
+                            <InputFile OnChange="UploadFiles" multiple />
+@* 
+                            <button class="btn btn-primary btn-with-file  p-1">
+                                <i class="bi bi-paperclip"></i>Attach File
+                                <InputFile class="file-input" OnChange="UploadFiles"  />
+                            </button> 
+                        </div>
+                        @if (showStatusMessage)
+                        {
+                            <p style="color:red; animation-timing-function:ease-in">File exceeds Limit 20MB</p>
+                        }
+                    </div>
+
+
+                </div>
+            </div>
+
+            @if (files.Count > 0)
+            {
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Size</th>
+                            <th>ContentType</th>
+                            <th>Date Attached</th>
+                            <th>Actions</th>
+
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var file in files)
+                        {
+                            // timeAgo = GetTimeAgo(file.UploadTime);
+                            <tr>
+                                <td>@file.FileName</td>
+                            <td>@BytesToString(@file.Size)</td>
+                            <td>@file.ContentType</td>
+
+                            <td>@file.UploadTime.ToString("dd-MM-yyyy")</td>
+                            <td>
+                                <i class="bi bi-download" @onclick="()=>Download(file.Id)"></i>
+                                <i class="bi bi-trash" @onclick="()=>DeleteFile(file.Id)"></i>
+                            </td>
+
+                        </tr>
+                    }
+                </tbody>
+                </table>
+            }
+            else
+            {
+                <p class="text-muted" style="text-align:center;">No Files</p>
+            }
+        </div>
+
+    }
+    else if (selectedOption == "comments")
+    {
+        <CreateComment TaskId="@task.Id" UserId="task.AssigneeId"></CreateComment>
+    }
+
+
+
+</div>
+ *@
+
+
+@* 
+    <LinkPage fromId="@taskId"></LinkPage>
+
+
+
+
+      @*   <div style="margin-top:20px; margin-left:19px">
+            <div class="d-flex justify-content-between align-items-center">
+        <h3>Files uploaded</h3>
+        <div class="d-flex flex-column align-items-start">
+            <div >
+        <div class="p-3 d-flex flex-row align-items-center">
+                 <button class="btn btn-primary btn-with-file  p-1">
+                    <i class="bi bi-paperclip"></i>Attach File
+              <InputFile class="file-input" OnChange="UploadFiles" multiple />
+                 </button> 
+                </div>
+                @if (showStatusMessage)
+                {
+                    <p style="color:red; animation-timing-function:ease-in">File exceeds Limit 20MB</p>
+                }
+            </div>
+    
+         
+        </div>
+    </div>
+         <table class="table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Size</th>
+                    <th>ContentType</th>
+                    <th>Date Attached</th>
+                    <th>Actions</th>
+
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var file in files)
+                {
+                   // timeAgo = GetTimeAgo(file.UploadTime);
+                    <tr>
+                        <td>@file.FileName</td>
+                        <td>@BytesToString(@file.Size)</td>
+                        <td>@file.ContentType</td>
+
+                        <td>@file.UploadTime.ToString("dd-MM-yyyy")</td>
+                        <td>
+                            <i class="bi bi-download" @onclick="()=>Download(file.Id)"></i>
+                        <i class="bi bi-trash" @onclick="()=>DeleteFile(file.Id)"></i>    
+                        </td>
+
+                    </tr>
+                }
+            </tbody>
+        </table>
+       
+
+</div>
+ 
+
+
+<CreateComment TaskId="@task.Id"  UserId="task.AssigneeId"></CreateComment> *@
+ 
+<script>
+    
+        document.querySelector('.btn-with-file').addEventListener('click', function () {
+            document.querySelector('.file-input').click();
+        });
+
+
+    window.saveAsFile = (fileName, byteString, contentType) => {
+        const byteCharacters = atob(byteString);
+        const byteNumbers = new Array(byteCharacters.length);
+        for (let i = 0; i < byteCharacters.length; i++) {
+            byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+        const byteArray = new Uint8Array(byteNumbers);
+
+        const blob = new Blob([byteArray], { type: contentType });
+
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = fileName;
+        link.click();
+        URL.revokeObjectURL(link.href);
+    };
+</script>
 
 @code {
+    private bool showStatusMessage = false;
+
     [Parameter]
     public string taskId { get; set; }
     List<CommentDTO> Comments = new List<CommentDTO>();
+    private List<FileDTOWOContent> files = new List<FileDTOWOContent>();
+    private bool isUploading = false;
+    private List<int> fibonacciNumbers = new List<int> {  1, 2, 3, 5, 8, 13, 21 };
+    private List<FileDTOWOContent> filesCache;
+    private bool isLoading = true;
+    private string selectedOption = "links"; // Default selection
 
     private TaskDTO task = new TaskDTO();
     private List<ProjectDTO> proj = new List<ProjectDTO>();
@@ -278,9 +685,145 @@
     private List<UserDTO> users = new List<UserDTO>();
     private bool flag = false;
     public string Username { get; set; }
+    private List<IBrowserFile> selectedFiles = new List<IBrowserFile>();
+    private string statusMessage="";
 
-    private IBrowserFile selectedFile;
+    //  private IBrowserFile selectedFile;
     private string taskStatusValue;
+
+    private async Task Download(int fileId)
+    {
+
+        var fileBytes = await fileUpload.DownloadFile(fileId);
+        await Load();
+
+        var file = files.FirstOrDefault(f => f.Id == fileId);
+
+        // Convert byte array to Base64 string
+        var base64Content = Convert.ToBase64String(fileBytes);
+        var url = file.FileName + file.ContentType;
+        // Create a temporary anchor element and initiate download
+        await jsRuntime.InvokeAsync<object>("saveAsFile", file.FileName, base64Content, file.ContentType);
+
+
+
+    }
+    private async Task DeleteFile(int id)
+    {
+        await fileUpload.DeleteFile(id);
+        await Load();
+    }
+
+
+
+    private void ChangeIsupload()
+    {
+        isUploading = true;
+        StateHasChanged();
+    }
+    private async Task ChangeStatusMsg()
+    {
+        statusMessage="File Uploaded sucessfully";
+
+        StateHasChanged();
+    }
+
+    private string BytesToString(long byteCount)
+    {
+        string[] suf = { "B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB" };
+        if (byteCount == 0)
+            return "0" + suf[0];
+        long bytes = Math.Abs(byteCount);
+        int place = Convert.ToInt32(Math.Floor(Math.Log(bytes, 1024)));
+        double num = Math.Round(bytes / Math.Pow(1024, place), 1);
+        return (Math.Sign(byteCount) * num).ToString() + suf[place];
+    }
+
+    private async Task UploadFiles(InputFileChangeEventArgs e)
+    {
+
+        ChangeIsupload();
+        var inputFileChangeEventArgs = e as InputFileChangeEventArgs;
+        var files = inputFileChangeEventArgs?.GetMultipleFiles();
+        if (files == null || files.Count == 0)
+        {
+            statusMessage = "No files selected.";
+            return;
+        }
+
+        using var content = new MultipartFormDataContent();
+        content.Add(new StringContent(taskId.ToString()), "TaskID");
+
+        foreach (var file in files)
+        {
+            if (file.Size > 20971520)
+            {
+                isUploading = false;
+                showStatusMessage = true;
+                StateHasChanged();
+                await Task.Delay(3000);
+                showStatusMessage = false;
+                StateHasChanged();
+                return;
+                //  return null;
+            }
+            var fileContent = new StreamContent(file.OpenReadStream(1024 * 1024 * 20)); // 20 MB limit
+            fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(file.ContentType);
+            content.Add(fileContent, "files", file.Name);
+        }
+
+
+
+        var result = await fileUpload.UploadFile(content);
+        await Load();
+
+        if (result.IsSuccessStatusCode)
+        {
+
+            isUploading = false;
+            await ChangeStatusMsg();
+            //await Load();
+            await Task.Delay(3000);
+            statusMessage = "";
+        }
+        else
+        {
+            statusMessage = "File upload failed.";
+        }
+    }
+
+    private void NavigateToLink(string id)
+    {
+        Navigation.NavigateTo($"/LinkTask/{id}");
+    }
+    private async Task Load()
+    {
+
+
+        try
+        {
+            isUploading = true;
+            StateHasChanged();
+
+            statusMessage = "Loading files...";
+            var filesList = await fileUpload.GetFilesByTID(taskId);
+            files = filesList.ToList();
+            filesCache = files; // Cache the files
+            statusMessage = "Files loaded successfully.";
+            // await Task.Delay(3000);
+
+            isUploading = false;
+            StateHasChanged();
+
+        }
+        catch (Exception ex)
+        {
+            statusMessage = $"Error loading files: {ex.Message}";
+        }
+    }
+
+
+
 
     public string GetUsername(CommentDTO comment)
     {
@@ -301,7 +844,7 @@
             if (Enum.TryParse<MyTaskStatus>(taskStatusValue, out var parsedStatus))
             {
                 task.TaskStatus = parsedStatus;
-               
+
             }
             //task.TaskStatus = taskStatusValue;
         }
@@ -314,16 +857,24 @@
             // task.BugStatus = taskStatusValue;
         }
     }
+
+     protected override async Task OnParametersSetAsync()
+    {
+        // Load the task details based on TaskId
+        task = await TaskService.GetTaskByID(taskId);
+    }
     protected override async Task OnInitializedAsync()
     {
-       // Comments = (await CmtApiService.GetCommentsAsyncByTID(taskId)).ToList();
+        // Comments = (await CmtApiService.GetCommentsAsyncByTID(taskId)).ToList();
+        Navigation.NavigateTo($"/updatetask/{taskId}");
+        task = await TaskService.GetTaskByID(taskId);
 
         var proj1 = await TaskService.GetAllProjectsAsync();
         proj = proj1.ToList();
 
         var itr1 = await TaskService.GetAllIterations();
         Itrs = itr1.ToList();
-
+        await Load();
         var users1 = await UserService.GetAllUsersAsync();
         users = users1.ToList();
         foreach (var i in Itrs)
@@ -333,15 +884,14 @@
                 filtItrs.Add(i);
             }
         }
-        task = await TaskService.GetTaskByID(taskId);
+        StateHasChanged();
+
+        isLoading = false;
         // Statuses = await TaskService.GetTasksAsync();
     }
 
 
-    private void HandleFileSelected(InputFileChangeEventArgs e)
-    {
-        selectedFile = e.File;
-    }
+ 
 
 
     private async Task HandleValidSubmit()
@@ -383,5 +933,38 @@
         await TaskService.UpdateTask(taskId,task);
         StateHasChanged();
         Navigation.NavigateTo("/");
+ 
+    }
+    private void OnOptionChanged(ChangeEventArgs e)
+    {
+
+        selectedOption = e.Value.ToString();
+      //  OnInitializedAsync();
+        StateHasChanged();
+    }  
+    private enum Tab
+    {
+        Links,
+        Files,
+        Comments
+    }
+
+    private Tab activeTab = Tab.Links;
+
+    private void OnTabChanged(Tab tab)
+    {
+        activeTab = tab;
+        OnOptionChanged(tab.ToString().ToLower());
+    }
+
+    private string GetActiveClass(Tab tab, bool isPane = false)
+    {
+        return activeTab == tab ? (isPane ? "show active" : "active") : "";
+    }
+
+    private void OnOptionChanged(string selectedOption)
+    {
+        // Handle the tab change event here
+        Console.WriteLine($"Tab changed to: {selectedOption}");
     }
 }

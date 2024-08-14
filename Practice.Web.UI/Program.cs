@@ -14,6 +14,7 @@ using DemoJira.DataAccess.InterfaceForRepo;
 using DemoJira.DataAccess.Repositories;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+using Syncfusion.Blazor;
 //using Microsoft.Fast.Components.FluentUI;
 
 namespace Practice.Web.UI
@@ -25,7 +26,7 @@ namespace Practice.Web.UI
             var builder = WebAssemblyHostBuilder.CreateDefault(args);
             builder.RootComponents.Add<App>("#app");
             builder.RootComponents.Add<HeadOutlet>("head::after");
-
+            builder.Services.AddSyncfusionBlazor();
              builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
             //builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("http://localhost:5011/") });
             builder.Services.AddScoped<ITaskService ,TaskService>();
@@ -40,6 +41,10 @@ namespace Practice.Web.UI
             builder.Services.AddScoped<IRelationRepos, RelationRepos>();
             builder.Services.AddScoped<IRelationService, RelationService>();
             builder.Services.AddScoped<RelationAPIService>();
+            builder.Services
+    .AddBlazorise(options => { options.Immediate = true; })
+    .AddBootstrap5Providers()
+    .AddFontAwesomeIcons();
 
             builder.Services.AddScoped<IFileRepos, FileRepos>();
             builder.Services.AddScoped<IFileService, FileService>();

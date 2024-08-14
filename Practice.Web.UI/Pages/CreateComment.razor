@@ -1,26 +1,36 @@
 ﻿@page "/Comment"
 @inject CommentAPIService CmtApiService
 @inject NavigationManager Navigation
-
+@inject IJSRuntime JSRuntime
 @inject UserAPIService UserService
+@inject FileApiService fileUpload
 
-<div>
-<div class="accordion m-3" @onclick="LoadComments">
-    <div class="accordion-item p-3">
-        <div class="accordion-header" @onclick="ToggleAccordion">
-            Add Comment
+<div class="m-3" style="margin-bottom:10px;">
+<div class=" " @onclick="LoadComments">
+        <div class=" p-1" style="border:2px; border-color:ActiveBorder" >
+            <div class="accordion-header d-flex justify-content-between align-items-center text-muted" style="cursor:pointer; " @onclick="ToggleAccordion">
+                <span class="@(isAccordionOpen ? "hidden" : "show")" style="margin:10px;">Add Comment <i style="margin-left:4px;" class="bi bi-pencil"></i></span>
+                @if (isAccordionOpen)
+                {
+                   // <i class="bi bi-caret-down-fill"></i>
+                }
+                else
+                {
+                    <i class="bi bi-caret-right-fill"></i>
+                }
         </div>
         @if (isAccordionOpen)
         {
-            <div class="accordion-body">
+            <div class="">
                 <div class="comment-section">
                     
-                    <textarea class="form-control " @bind="Cont" placeholder="Enter your comment..."></textarea>
-                    <div class="d-flex flex-row-reverse bd-highlight p-3">
+                    <textarea class="form-control " @bind="Cont" style="height: 150px;" placeholder="Enter your comment..."></textarea>
+                    <div class="d-flex flex-row-reverse bd-highlight p-2" style="padding:5px">
 
                         <button class="btn btn-primary me-1 p-2 bd-highlight" @onclick="HandleValidSubmit">Save</button>&nbsp
                         <button class="btn btn-secondary p-2 bd-highlight" @onclick="CancelComment">Cancel</button>
-                            <a @onclick="()=>Attach(TaskId)"><i class="bi bi-upload m-3" style="font-size: 1.5rem; font-weight: bold;"></i></a>
+                       
+                          
 
                     </div>
                 </div>
@@ -28,30 +38,80 @@
         }
        
         
-            <Alert @ref="flag" Color="Color.Success"> Added comment</Alert>
         
     </div>
 </div>
 
 
-    <div class="comments-list">
+    <div class="comments-list m-2" style="margin-bottom:15px;">
 
-        @foreach (CommentDTO comment in Comments)
+        @if (Comments.Count > 0)
         {
+            @foreach (CommentDTO comment in Comments)
+            {
 
-            Username = GetUsername(comment);
-            <CommentBox Id="@comment.CommentId"
-                        Username="@Username"
-                        UserId="@UserId"
-                        Content="@comment.Content"
-                        TaskId="@TaskId"
-                        Comments="@Comments"
-                        CreatedAt="@comment.CreatedAt" />
+                Username = GetUsername(comment);
+                <CommentBox Id="@comment.CommentId"
+                Username="@Username"
+                UserId="@UserId"
+                Content="@comment.Content"
+                TaskId="@TaskId"
+                Comments="@Comments"
+                OnCommentChange="@LoadComments"
+                CreatedAt="@comment.CreatedAt" />
+            }
+
+        }
+        else
+        {
+            <p class="text-muted" style=" text-align:center;">No comments</p>
         }
 
     </div>
-    
+
 </div>
+<style>
+    .icon-wrapper {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem; /* Adjust the size of the icon here */
+        margin-left: 0.5rem;
+    }
+
+    .file-input {
+        position: absolute;
+        opacity: 0;
+        height: max-content;
+        overflow: hidden;
+        width: max-content;
+    }
+
+    .show {
+        display: block; /* Makes the element visible */
+    }
+
+    /* Optionally, you can define a class to hide the element by default */
+    .hidden {
+        display: none; /* Hides the element */
+    }
+
+    .btn-with-file {
+        position: relative;
+        overflow: hidden;
+    }
+
+
+        /* Style for the file input button */
+        .btn-with-file .btn {
+            padding-right: 10px; /* Add padding to the button to make room for the file input */
+        }
+
+    button {
+        cursor: pointer;
+    }
+
+</style>
 
 @code {
     /// <summary>
@@ -66,6 +126,9 @@
     Alert flag;
     private CommentDTO comment1;
     // private IEnumerable<CommentDTO> Comments;
+    private List<IBrowserFile> selectedFiles = new List<IBrowserFile>();
+    private string statusMessage = "";
+    private bool isUploading = false;
 
     public string Username { get; set; }
     List<UserDTO> Users = new List<UserDTO>();
@@ -74,14 +137,21 @@
     protected override async void OnInitialized()
     {
         //comment.TaskId = TaskId;
-        //Comments = (await CmtApiService.GetCommentsAsyncByTID(TaskId)).ToList();
+        Comments = (await CmtApiService.GetCommentsAsyncByTID(TaskId)).ToList();
+      
         Users = (await UserService.GetAllUsersAsync()).ToList();
+        await LoadComments();
 
 
     }
+
+    
     private async Task LoadComments()
     {
-        Comments = (await CmtApiService.GetCommentsAsyncByTID(TaskId)).ToList();
+        Comments = (await CmtApiService.GetCommentsAsyncByTID(TaskId)).OrderByDescending(c => c.CreatedAt)
+            .ToList();
+        // Comments.Reverse();
+        StateHasChanged();
     }
     public  string GetUsername(CommentDTO comment)
     {
@@ -104,55 +174,32 @@
                 UserId = UserId,
                 CreatedAt = DateTime.Now
     };
-       await flag.Show();
+       // await flag.Show();
         var cmt =await CmtApiService.CreateComment(comment1);
+        
         Cont = string.Empty;
-        await Task.Delay(2000);
-       await flag.Toggle();
-       await Reload();
+      //  await Task.Delay(2000);
+       // await flag.Toggle();
+        await LoadComments();
         StateHasChanged();
-       // Reload();
+        // Reload();
 
     }
-    private async Task Attach(string id)
-    {
-
-        if (Navigation != null)
-        {
-            Navigation.NavigateTo($"/upload/{id}");
-        }
-        else
-        {
-            Console.WriteLine("NavigationManager is not initialized.");
-        }
-    }
-    private void HandleCancel()
-    {
-        // Handle cancel action
-        // You can navigate to another page or clear the form
-    }
+   
+   
     private bool isAccordionOpen = false;
-   // private string Comment { get; set; } = string.Empty;
-    private async Task Reload()
-    {
-       Comments = (await CmtApiService.GetCommentsAsyncByTID(TaskId)).ToList();
-        StateHasChanged();
-
-    }
+    // private string Comment { get; set; } = string.Empty;
+   
     private void ToggleAccordion()
     {
         isAccordionOpen = !isAccordionOpen;
     }
 
-    private void SaveComment()
-    {
-        // Implement save logic here
-        Console.WriteLine($"Comment saved: {comment1.Content}");
-    }
-
+  
     private void CancelComment()
     {
         // Clear the comment
-        
+        Cont = "";
+        ToggleAccordion();
     }
 }

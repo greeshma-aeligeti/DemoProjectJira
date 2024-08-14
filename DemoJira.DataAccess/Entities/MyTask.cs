@@ -36,7 +36,8 @@ namespace DemoJira.DataAccess.Entities
         [ForeignKey(nameof(IterationId))]
         public Iteration Iterations {  get; set; }
 
-        public string Description {  get; set; }
+       
+        public string? Description {  get; set; }
 
        public PriorityLevel Priority {  get; set; }
         public DateTime? CreatedAt { get; set; }

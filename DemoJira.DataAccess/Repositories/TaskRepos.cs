@@ -48,12 +48,30 @@ namespace DemoJira.DataAccess.Repositories
 
                 }
             }
+            
             var task1 = await _dbContext.Tasks
            .Include(t => t.Comments)
            .FirstOrDefaultAsync(t => t.TaskId == task.TaskId);
+           /* var comments = await _dbContext.Comments.ToListAsync();
+            foreach (Comment c in comments)
+            {
+                if (c.TaskId == task.TaskId)
+                {
+                    _dbContext.Comments.Remove(c);
+                    await _dbContext.SaveChangesAsync();
+
+                }
+            }
+*/
+
             if (task != null)
             {
-                _dbContext.Comments.RemoveRange(task1.Comments);
+
+                if (task1.Comments != null)
+                {
+                    _dbContext.Comments.RemoveRange(task1.Comments);
+                }
+                
 
                 _dbContext.Tasks.Remove(task);
                 await _dbContext.SaveChangesAsync();
@@ -100,8 +118,6 @@ namespace DemoJira.DataAccess.Repositories
             }
             return t1;
 
-            var task = await _dbContext.Tasks.FirstOrDefaultAsync(t => t.TaskId == id);
-            return task;
             //throw new NotImplementedException();
         }
 

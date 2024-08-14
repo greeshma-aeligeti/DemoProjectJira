@@ -1,69 +1,4 @@
-﻿@* @page "/upload"
-@inject FileApiService FileService
-
-<h3>Upload File</h3>
-
-<EditForm Model="fileUploadModel" OnValidSubmit="HandleValidSubmit">
-    <DataAnnotationsValidator />
-
-    <label for="taskId">Task ID:</label>
-    <InputNumber @bind-Value="fileUploadModel.TaskId" id="taskId" />
-
-    <label for="file">File:</label>
-    <InputFile OnChange="HandleFileChange" id="file" />
-
-    <button type="submit">Upload</button>
-</EditForm>
-
-@code {
-    private FileUploadModel fileUploadModel = new FileUploadModel();
-    private IBrowserFile file;
-
-    protected override void OnInitialized()
-    {
-        fileUploadModel.TaskId = 0;
-        base.OnInitialized();
-    }
-
-    private void HandleFileChange(InputFileChangeEventArgs e)
-    {
-        file = e.File;
-    }
-
-    private async Task HandleValidSubmit()
-    {
-        if (file == null)
-        {
-            Console.WriteLine("No file selected.");
-            return;
-        }
-
-        using var memoryStream = new MemoryStream();
-        await file.OpenReadStream(maxAllowedSize: 10 * 1024 * 1024).CopyToAsync(memoryStream); // Max file size: 10 MB
-
-        var fileDto = new FileDTO
-            {
-                //FileId = 1,
-        FileName = file.Name,
-            Content = memoryStream.ToArray(),
-            TaskId = fileUploadModel.TaskId
-        };
-
-        var result = await FileService.UploadFileAsync(fileDto);
-
-    }
-
-    public class FileUploadModel
-    {
-        public int TaskId { get; set; }
-    }
-}
- *@
-
-
-
-
-@page "/upload/{id}"
+﻿@page "/upload/{id}"
 @using System.Reflection.Metadata
   @using System.Globalization
 @using System.IO
@@ -107,7 +42,7 @@
 @code {
     private ElementReference inputFile;
     private string statusMessage;
-    private List<FileDTO> files = new List<FileDTO>();
+    private List<FileDTOWOContent> files = new List<FileDTOWOContent>();
     [Parameter] public string id { get; set; }
     [Inject]
     private IJSRuntime jsRuntime { get; set; }
@@ -128,6 +63,8 @@
     private async Task UploadFiles(InputFileChangeEventArgs e)
     {
         var inputFileChangeEventArgs = e as InputFileChangeEventArgs;
+        statusMessage = "Uploading";
+        StateHasChanged();
         var files = inputFileChangeEventArgs?.GetMultipleFiles();
         if (files == null || files.Count == 0)
         {

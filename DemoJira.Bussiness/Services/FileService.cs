@@ -22,6 +22,14 @@ namespace DemoJira.Bussiness.Services
             this.taskRepository = taskRepository;
         }
 
+        public async Task DeleteFile(int Fileid)
+        {
+            var resp = await fileRepos.GetFileById(Fileid);
+            await fileRepos.DeleteFile(resp);
+
+           // throw new NotImplementedException();
+        }
+
         public async Task<FileDTO> GetFileById(int fileId)
         {
             var file = await fileRepos.GetFileById(fileId);
@@ -43,16 +51,16 @@ namespace DemoJira.Bussiness.Services
             };
         }
 
-        public async Task<IEnumerable<FileDTO>> GetFilesWithTaskID(string TaskID)
+        public async Task<IEnumerable<FileDTOWOContent>> GetFilesWithTaskID(string TaskID)
         {
 
             var files= await fileRepos.GetAllFilesByTaskID(TaskID);
-            List <FileDTO>  res= new List<FileDTO>();
+            List <FileDTOWOContent>  res= new List<FileDTOWOContent>();
             foreach(var file in files) {
-                res.Add(new FileDTO { 
+                res.Add(new FileDTOWOContent
+                { 
                 Id = file.Id,
                 FileName = file.FileName,
-                Content = file.Content,
                 ContentType = file.ContentType,
                 Size = file.Size,
                 TaskId=file.TaskId,

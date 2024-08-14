@@ -12,6 +12,7 @@ namespace DemoJira.DataAccess.InterfaceForRepo
         Task UploadFile(MyFile file);
         Task<IEnumerable<MyFile>> GetAllFilesByTaskID(string id);
         Task<MyFile> GetFileById(int fileId);
+        Task DeleteFile(MyFile file);
 
     }
 }

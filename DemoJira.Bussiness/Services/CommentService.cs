@@ -59,6 +59,7 @@ namespace DemoJira.Bussiness.Services
             var Comments = await _repository.GetAllComments();
             var resp = Comments.Select(c => new CommentDTO
             {
+                CommentId=c.CommentId,  
                 Content = c.Content,
                 UserId=c.UserId,
                 TaskId=c.TaskId,
@@ -74,6 +75,7 @@ namespace DemoJira.Bussiness.Services
             var Comments=await _repository.GetAllCommentsByTaskID(tID);
             var resp=Comments.Select(c=> new CommentDTO
             {
+                CommentId=c.CommentId,
                 Content = c.Content,
                 UserId = c.UserId,
                 TaskId = c.TaskId,
@@ -90,6 +92,7 @@ namespace DemoJira.Bussiness.Services
             if (cmt == null) return null;
             return new CommentDTO
             {
+                CommentId=cmt.CommentId,
                 Content = cmt.Content,
 
                 UserId = cmt.UserId,

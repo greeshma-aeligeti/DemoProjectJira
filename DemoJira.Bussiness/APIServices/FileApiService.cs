@@ -54,9 +54,14 @@ namespace DemoJira.Bussiness.APIServices
                 throw new Exception($"Failed to download file. Status code: {response.StatusCode}");
             }
         }
+        public async Task<bool> DeleteFile(int id)
+        {
+            HttpResponseMessage resp = await _httpClient.DeleteAsync($"/api/File/{id}");
+            return resp.IsSuccessStatusCode;
+        }
 
 
-        public async Task<IEnumerable<FileDTO>> GetFilesByTID(string id)
+        public async Task<IEnumerable<FileDTOWOContent>> GetFilesByTID(string id)
         {
             var response = await _httpClient.GetStringAsync($"api/File/getByID/{id}");
             Console.WriteLine(response);
@@ -67,7 +72,7 @@ namespace DemoJira.Bussiness.APIServices
                 PreserveReferencesHandling = PreserveReferencesHandling.None,
             };
 
-            return JsonConvert.DeserializeObject<List<FileDTO>>(response, settings);
+            return JsonConvert.DeserializeObject<List<FileDTOWOContent>>(response, settings);
 
         }
 
