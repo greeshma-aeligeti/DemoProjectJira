@@ -1,0 +1,108 @@
+﻿<div class="d-flex flex-row p-3 " style="padding:6px;">
+
+    <Dropdown Style="margin-right:15px;">
+        <DropdownToggle Color="Color.Light">
+            Select Type
+        </DropdownToggle>
+        <DropdownMenu>
+            @foreach (var type in FilterTypes)
+            {
+                <DropdownItem Value="@type"
+                              Checked="@IsTypeSelected(type)"
+                              CheckedChanged="@(e => OnFilterCheckboxChanged(type, e))"
+                                    ShowCheckbox>@type</DropdownItem>
+            }
+        </DropdownMenu>
+    </Dropdown>
+
+    <Dropdown>
+        <DropdownToggle Color="Color.Light">
+            Select Assignee
+        </DropdownToggle>
+        <DropdownMenu>
+            @if (Users != null && Users.Any())
+            {
+                @foreach (var user in Users)
+                {
+                    <DropdownItem Value="@user.UserId.ToString()"
+                                  Checked="@IsUserSelected(user.UserId.ToString())"
+                                  CheckedChanged="@(e => OnFilterUserCheckboxChanged(user.UserId.ToString(), e))"
+                                        ShowCheckbox>
+                     @user.UserName
+                    </DropdownItem>
+                }
+            }
+            else
+            {
+                <DropdownItem disabled>No Users Available</DropdownItem>
+            }
+        </DropdownMenu>
+    </Dropdown>
+</div>
+
+@code {
+    @code {
+        private List<TaskDTO> _tasks = new List<TaskDTO>();
+
+        [Parameter]
+        public List<TaskDTO> Tasks
+        {
+            get => _tasks;
+            set
+            {
+                if (_tasks != value)
+                {
+                    _tasks = value;
+                    ApplyFilters();  // Re-apply filters when tasks are updated
+                }
+            }
+        }
+
+        [Parameter] public EventCallback<List<TaskDTO>> FilteredTasksChanged { get; set; }
+        [Parameter] public IEnumerable<string> FilterTypes { get; set; } = new[] { "Task", "Bug" };
+        [Parameter] public IEnumerable<UserDTO> Users { get; set; } = new List<UserDTO>();
+
+        private List<string> selectedTypes = new List<string>();
+        private List<string> selectedUserIds = new List<string>();
+
+        private bool IsTypeSelected(string type) => selectedTypes.Contains(type);
+
+        private void OnFilterCheckboxChanged(string type, bool isChecked)
+        {
+            if (isChecked)
+                selectedTypes.Add(type);
+            else
+                selectedTypes.Remove(type);
+
+            ApplyFilters();
+        }
+
+        private bool IsUserSelected(string userId) => selectedUserIds.Contains(userId);
+
+        private void OnFilterUserCheckboxChanged(string userId, bool isChecked)
+        {
+            if (isChecked)
+                selectedUserIds.Add(userId);
+            else
+                selectedUserIds.Remove(userId);
+
+            ApplyFilters();
+        }
+
+        private void ApplyFilters()
+        {
+            if (_tasks == null)
+            {
+                return;
+            }
+
+            var filteredTasks = _tasks
+                .Where(t => selectedTypes.Count == 0 || selectedTypes.Contains(t.Type.ToString()))
+                .Where(t => selectedUserIds.Count == 0 || selectedUserIds.Contains(t.AssigneeId.ToString()))
+                .ToList();
+
+            FilteredTasksChanged.InvokeAsync(filteredTasks);
+        }
+    }
+
+}

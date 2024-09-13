@@ -1,0 +1,15 @@
+﻿.nav-tabs {
+    border-bottom: 0px solid #ddd;
+}
+
+.nav-item .nav-link {
+    padding: 10px 15px;
+    margin-right: 5px;
+    border: 1px solid transparent;
+    border-radius: 4px 4px 0 0;
+}
+
+    .nav-item .nav-link.active {
+        /*       border-color: #dee2e6 #dee2e6 #fff; /* Make the active tab's border visible */
+        /*  background-color: #fff; */
+    }

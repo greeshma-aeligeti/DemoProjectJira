@@ -120,6 +120,11 @@ namespace DemoJira.Bussiness.DTO
             {
                 yield return new ValidationResult("Type is required", new[] { nameof(Type) });
             }
+            if (StartDate < DateTime.Today)
+            {
+                yield return new ValidationResult("Start date must start from today!", new[] { nameof(StartDate) });
+
+            }
             if (StartDate == EndDate)
             {
                 yield return new ValidationResult("End Date must be after Start Date ", new[] { nameof(EndDate) });

@@ -5,7 +5,6 @@
 @inject UserAPIService UserService
 @inject NavigationManager Navigation
 
-@* @inject IToastService ToastService *@
 
 <EditForm Model="task" OnValidSubmit="HandleValidSubmit">
 
@@ -14,7 +13,6 @@
 
        <DataAnnotationsValidator />
 
-    <Microsoft.AspNetCore.Components.Forms.ValidationSummary />
  
     <div class="p-3 container">
 <div class="d-flex flex-row p-3 row">
@@ -29,13 +27,10 @@
       <br/>
        
         <div class=" col-12">
-        @* <FluentTextField @bind-Value="task.Title" Label="Title"></FluentTextField> *@
-
-
+      
             <label for="description" class="fw-bold">Description</label>
         <InputTextArea id="description" @bind-Value="task.Description" class="form-control" />
-     @*    <FluentTextArea @bind-Value="task.Description"  Label="Description" /> *@
-    </div>
+      </div>
             <div class="col-12"></div>
 
     <br/>
@@ -46,33 +41,7 @@
 
                 <AutoComplete1 TItem="UserDTO" Items="@users" DisplayPropertyName="UserName" Placeholder="Select Reporter" IdPropertyName="UserId" ValueChanged="@(value => task.ReporterId = (int)value)" />
 
-      @*           <SearchableDropdown TItem="UserDTO"
-                                    TValue="int"
-                                    Items="users"
-                                    Value="@task.ReporterId"
-                                    ValueChanged="@(value => task.ReporterId = (int)value)" 
-
-                                    GetDisplayText="u => u.UserName"
-                                    GetValue="u => u.UserId"
-                                    Placeholder="Select Reporter"
-                                    />
-                                                    <ValidationMessage For="@(()=>task.ReporterId)" />
- *@
-
-            @* <InputSelect id="user" @bind-Value="task.ReporterId" class="form-control">
-                <option hidden value="">Select Reporter</option>
-                @foreach (UserDTO p in users)
-                {
-                    
-                    <option value="@p.UserId" class="d-flex flex-row align-items-center" >
-
-                            <img src="https://via.placeholder.com/20" alt="icon" style="width: 20px; height: 20px; margin-right: 8px;" />
-
-                        @p.UserName</option>
-                }
-
-            </InputSelect>
- *@
+     
         </div>
             <div class=" col-6 ">
 
@@ -81,30 +50,6 @@
 
                 <AutoComplete1 TItem="UserDTO" Items="@users" DisplayPropertyName="UserName" Placeholder="Select Assignee" IdPropertyName="UserId" ValueChanged="@(value => task.AssigneeId = (int)value)" />
 
-               @*  <SearchableDropdown TItem="UserDTO"
-                                    TValue="int"
-                                    Items="users"
-                                    Value="@task.AssigneeId"
-                                    ValueChanged="@(value => task.AssigneeId = (int)value)"
-                                    GetDisplayText="u => u.UserName"
-                                    GetValue="u => u.UserId"
-                                    Placeholder="Select Assignee" />
-                                                    <ValidationMessage For="@(()=>task.AssigneeId)" />
- *@
-                @* <InputSelect id="user" @bind-Value="task.AssigneeId" class="form-control">
-                    <option hidden value="">Select Assignee</option>
-                    @foreach (UserDTO p in users)
-                    {
-
-                        <option value="@p.UserId" class="d-flex flex-row align-items-center">
-
-@*                             <img src="https://via.placeholder.com/20" alt="icon" style="width: 20px; height: 20px; margin-right: 8px;" />
- 
-                            @p.UserName
-                        </option>
-                    }
-
-                </InputSelect> *@
 
             </div>
         </div>

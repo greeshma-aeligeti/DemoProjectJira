@@ -9,7 +9,7 @@
 <div class=" " @onclick="LoadComments">
         <div class=" p-1" style="border:2px; border-color:ActiveBorder" >
             <div class="accordion-header d-flex justify-content-between align-items-center text-muted" style="cursor:pointer; " @onclick="ToggleAccordion">
-                <span class="@(isAccordionOpen ? "hidden" : "show")" style="margin:10px;">Add Comment <i style="margin-left:4px;" class="bi bi-pencil"></i></span>
+                <span class="@(isAccordionOpen ? "hidden" : "show")" style="margin:10px; display:@(isAccordionOpen ?"none" : "block") ">Add Comment <i style="margin-left:4px;" class="bi bi-pencil"></i></span>
                 @if (isAccordionOpen)
                 {
                    // <i class="bi bi-caret-down-fill"></i>
@@ -71,46 +71,7 @@
 
 </div>
 <style>
-    .icon-wrapper {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 2rem; /* Adjust the size of the icon here */
-        margin-left: 0.5rem;
-    }
-
-    .file-input {
-        position: absolute;
-        opacity: 0;
-        height: max-content;
-        overflow: hidden;
-        width: max-content;
-    }
-
-    .show {
-        display: block; /* Makes the element visible */
-    }
-
-    /* Optionally, you can define a class to hide the element by default */
-    .hidden {
-        display: none; /* Hides the element */
-    }
-
-    .btn-with-file {
-        position: relative;
-        overflow: hidden;
-    }
-
-
-        /* Style for the file input button */
-        .btn-with-file .btn {
-            padding-right: 10px; /* Add padding to the button to make room for the file input */
-        }
-
-    button {
-        cursor: pointer;
-    }
-
+   
 </style>
 
 @code {
@@ -150,6 +111,7 @@
     {
         Comments = (await CmtApiService.GetCommentsAsyncByTID(TaskId)).OrderByDescending(c => c.CreatedAt)
             .ToList();
+           // ToggleAccordion();
         // Comments.Reverse();
         StateHasChanged();
     }

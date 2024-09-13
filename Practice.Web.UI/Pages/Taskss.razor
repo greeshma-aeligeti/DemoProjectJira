@@ -3,7 +3,7 @@
 @using System.Diagnostics
 @inject TaskAPIService taskService
 @inject UserAPIService userService
-@inject NavigationManager Navigation
+@inject NavigationManager Navigation;
 @using Microsoft.AspNetCore.Components
 @using Blazorise.LoadingIndicator
 @using Blazorise.Animate
@@ -18,87 +18,24 @@
 
 </script>
 
-<style>
-         TableRow {
-            padding: 10px;
-        }
-
-        .table-wrapper {
-            max-height:300px;
-            overflow-x:hidden;
-            margin: 20px;
-        }
-
-        .filter-section {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            padding: 1rem;
-            background-color: #f8f9fa;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-
-            .filter-section input {
-                flex: 4;
-                padding: 0.5rem;
-                border-radius: 4px;
-                border: 1px solid #ced4da;
-            }
-            TableRowCell{
-                align-content:center;
-            }
-         
-
-            .filter-section .btn {
-                white-space: nowrap;
-            }
-            .overlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(255, 255, 255, 0.8); /* Semi-transparent white */
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        z-index: 1000; /* Ensure overlay is above other content */
-        opacity: 0;
-        transition: opacity 0.3s ease;
-           pointer-events: none;
-    }
-
-        .overlay.show {
-            opacity: 1;
-               pointer-events:auto;
-               visibility:visible;
-        }
-
-    .spinner-border {
-        width: 3rem;
-        height: 3rem;
-        border-width: 0.25em;
-        color:cadetblue;
-    }
-
-    </style>
-   
-
 <div class="overlay @(isLoading ? "show" : "")  ">
     <div class="spinner-container">
         <div class="spinner-border" role="status">
             <span class="visually-hidden">Loading...</span>
         </div>
-        </div>
+    </div>
 </div>
+   
+
 <h3>List of Tasks</h3>
  <div class="filter-section ">
     <button class="btn btn-primary" @onclick="CreateNavigate"> <i class="bi bi-plus" style="margin-right:5px;"></i>Create </button>
 
     <SearchBox Placeholder="Search by name"filteredTasks="@filteredTasks" tasks1="tasks"  OnSearchChanged="HandleSearchChanged" />
 
-
+    <FilterComponent Tasks="@tasks"
+                     Users="@users"
+                     FilteredTasksChanged="HandleFilteredTasksChanged" />
     </div>
 
 
@@ -354,7 +291,10 @@ else{
     private bool sortAscending = true;
 
     private Modal isModalVisible;
-
+    private void HandleFilteredTasksChanged(List<TaskDTO> filtered)
+    {
+        filteredTasks = filtered;
+    }
 
     private Task ShowModal()
     {
@@ -445,11 +385,11 @@ else{
         var res=  await taskService.DeleteTaskApi(id);
         if (res)
         {
-            isLoading = false;
             alert.Show();
             await Task.Delay(2000);
 
             await Reload();
+            isLoading = false;
 
         }
         else
@@ -559,7 +499,7 @@ else{
                 itrs = (await taskService.GetAllIterations()).ToArray();
                 users = (await userService.GetAllUsersAsync()).ToArray();
                 
-                ApplyFiltersAndSort();
+             //   ApplyFiltersAndSort();
 
             }
             else{

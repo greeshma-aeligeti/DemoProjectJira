@@ -1,13 +1,10 @@
 
 using DemoJira.Bussiness.APIServices;
-using DemoJira.Bussiness.DTO;
 using DemoJira.Bussiness.ServiceInterface;
 using DemoJira.Bussiness.Services;
 using DemoJira.DataAccess;
-using DemoJira.DataAccess.Entities;
 using DemoJira.DataAccess.InterfaceForRepo;
 using DemoJira.DataAccess.Repositories;
-using Microsoft.AspNetCore.Builder;
 using Practice.API.Controllers;
 using System.Text.Json;
 

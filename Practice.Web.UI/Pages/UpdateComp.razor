@@ -10,70 +10,20 @@
 @inject UserAPIService UserService
 <style>
     /* Add to your CSS file */
-    .blur {
-        filter: blur(5px);
-        pointer-events: none; /* Optional: Prevent interaction with blurred elements */
-    }
-    i{
-        cursor:pointer;
-        margin-right:10px;
-    }
-    .overlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(255, 255, 255, 0.8); /* Semi-transparent white */
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        z-index: 1000; /* Ensure overlay is above other content */
-        opacity: 0;
-        transition: opacity 0.3s ease;
-           pointer-events: none;
+    .nav-tabs {
+        border-bottom: 0px solid #ddd;
     }
 
-        .overlay.show {
-            opacity: 1;
-               pointer-events:auto;
-               visibility:visible;
-        }
-
-    .spinner-border {
-        width: 3rem;
-        height: 3rem;
-        border-width: 0.25em;
-        color:cadetblue;
-    }
-    /* Hide the default file input text */
-    .file-input {
-        position: absolute;
-        opacity: 0;
-        height:max-content;
-        overflow: hidden;
-        width:max-content;
-      
+    .nav-item .nav-link {
+        padding: 10px 15px;
+        margin-right: 5px;
+        border: 1px solid transparent;
+        border-radius: 4px 4px 0 0;
     }
 
-    .btn-with-file {
-        position: relative;
-        overflow: hidden;
-    }
-
-    .spinner-container {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 100%;
-        height: 100%;
-    }
-        /* Style for the file input button */
-        .btn-with-file .btn {
-            padding-right: 10px; /* Add padding to the button to make room for the file input */
-        }
-        button{
-            cursor:pointer;
+        .nav-item .nav-link.active {
+            /*       border-color: #dee2e6 #dee2e6 #fff; /* Make the active tab's border visible */
+            /*  background-color: #fff; */
         }
 
 </style>
@@ -118,7 +68,7 @@
     {
         <PopUp></PopUp>
     }
-    <div class="p-3 container">
+    <div class="container">
 <div class="d-flex flex-row p-3 row">
             
             <div class=" col-12">
@@ -348,45 +298,13 @@
         </div>
 
     </div>
+
 </EditForm>
 
-@* 
-        <div class="m-3">
-            <label for="file" class="form-label fw-bold">Attachments <i class="bi bi-paperclip"></i></label><br/>
-            <InputFile id="file" OnChange="HandleFileSelected" />
-        </div>
-      
- *@
 
 
-    @* <div>
-        <label for="assignedTo">Assign To:</label>
-        <select id="assignedTo" @bind="task.AssignedToUserId" class="form-control">
-            <option value="">Select a user</option>
-            @foreach (var user in users)
-            {
-                <option value="@user.UserId">@user.UserName</option>
-            }
-        </select>
-    </div> *@
-
-@* <div class=" p-3" style="margin-left:12px;" role="group" aria-label="Basic radio toggle button group">
-    <input type="radio" class="btn-check" name="btnradio" id="btnradio1" autocomplete="off" value="links" @onchange="OnOptionChanged" checked>
-    <label class="btn btn-outline-primary" for="btnradio1"> Links</label>
-
-    <input type="radio" class="btn-check" name="btnradio" id="btnradio2" value="files" @onchange="OnOptionChanged" autocomplete="off">
-    <label class="btn btn-outline-primary" for="btnradio2">Files</label>
-
-    <input type="radio" class="btn-check" name="btnradio" id="btnradio3" value="comments" @onchange="OnOptionChanged" autocomplete="off">
-    <label class="btn btn-outline-primary" for="btnradio3">Comments</label>
-
-   
-
-</div> *@
-
-
-<div class="container m-3 ">
-    <ul class="nav nav-tabs" id="myTab" role="tablist" >
+<div class="container m-3  ">
+    <ul class="nav nav-tabs d-flex " id="myTab" role="tablist" >
         <li class="nav-item" role="presentation">
             <a class="nav-link @GetActiveClass(Tab.Links)" style="cursor:pointer" id="links-tab"  role="tab" @onclick="() => OnTabChanged(Tab.Links)">Links</a>
         </li>
@@ -424,11 +342,7 @@
                         <div class="p-3 d-flex flex-row align-items-center">
 
                             <InputFile OnChange="UploadFiles" multiple />
-@* 
-                            <button class="btn btn-primary btn-with-file  p-1">
-                                <i class="bi bi-paperclip"></i>Attach File
-                                <InputFile class="file-input" OnChange="UploadFiles"  />
-                            </button> *@
+
                         </div>
                         @if (showStatusMessage)
                         {
@@ -484,161 +398,12 @@
         else if (activeTab == Tab.Comments)
         {
             <div class="tab-pane fade show active" id="comments" role="tabpanel" aria-labelledby="comments-tab">
-                <!-- Comments Content -->
                 <CreateComment TaskId="@task.Id" UserId="task.AssigneeId"></CreateComment>
             </div>
         }
     </div>
 </div>
-@* <div style="margin-left:13px; height:500px">
 
-    @if (selectedOption == "links")
-    {
-        <LinkPage fromId="@taskId"></LinkPage>
-    }
-    else if (selectedOption == "files")
-    {
-
-
-        <div style=" margin-left:19px">
-            <div class="d-flex justify-content-between align-items-center">
-                <h4>Files uploaded</h4>
-                <div class="d-flex flex-column align-items-start">
-                    <div>
-                        <div class="p-3 d-flex flex-row align-items-center">
-
-                            <InputFile OnChange="UploadFiles" multiple />
-@* 
-                            <button class="btn btn-primary btn-with-file  p-1">
-                                <i class="bi bi-paperclip"></i>Attach File
-                                <InputFile class="file-input" OnChange="UploadFiles"  />
-                            </button> 
-                        </div>
-                        @if (showStatusMessage)
-                        {
-                            <p style="color:red; animation-timing-function:ease-in">File exceeds Limit 20MB</p>
-                        }
-                    </div>
-
-
-                </div>
-            </div>
-
-            @if (files.Count > 0)
-            {
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Size</th>
-                            <th>ContentType</th>
-                            <th>Date Attached</th>
-                            <th>Actions</th>
-
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var file in files)
-                        {
-                            // timeAgo = GetTimeAgo(file.UploadTime);
-                            <tr>
-                                <td>@file.FileName</td>
-                            <td>@BytesToString(@file.Size)</td>
-                            <td>@file.ContentType</td>
-
-                            <td>@file.UploadTime.ToString("dd-MM-yyyy")</td>
-                            <td>
-                                <i class="bi bi-download" @onclick="()=>Download(file.Id)"></i>
-                                <i class="bi bi-trash" @onclick="()=>DeleteFile(file.Id)"></i>
-                            </td>
-
-                        </tr>
-                    }
-                </tbody>
-                </table>
-            }
-            else
-            {
-                <p class="text-muted" style="text-align:center;">No Files</p>
-            }
-        </div>
-
-    }
-    else if (selectedOption == "comments")
-    {
-        <CreateComment TaskId="@task.Id" UserId="task.AssigneeId"></CreateComment>
-    }
-
-
-
-</div>
- *@
-
-
-@* 
-    <LinkPage fromId="@taskId"></LinkPage>
-
-
-
-
-      @*   <div style="margin-top:20px; margin-left:19px">
-            <div class="d-flex justify-content-between align-items-center">
-        <h3>Files uploaded</h3>
-        <div class="d-flex flex-column align-items-start">
-            <div >
-        <div class="p-3 d-flex flex-row align-items-center">
-                 <button class="btn btn-primary btn-with-file  p-1">
-                    <i class="bi bi-paperclip"></i>Attach File
-              <InputFile class="file-input" OnChange="UploadFiles" multiple />
-                 </button> 
-                </div>
-                @if (showStatusMessage)
-                {
-                    <p style="color:red; animation-timing-function:ease-in">File exceeds Limit 20MB</p>
-                }
-            </div>
-    
-         
-        </div>
-    </div>
-         <table class="table">
-            <thead>
-                <tr>
-                    <th>Name</th>
-                    <th>Size</th>
-                    <th>ContentType</th>
-                    <th>Date Attached</th>
-                    <th>Actions</th>
-
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var file in files)
-                {
-                   // timeAgo = GetTimeAgo(file.UploadTime);
-                    <tr>
-                        <td>@file.FileName</td>
-                        <td>@BytesToString(@file.Size)</td>
-                        <td>@file.ContentType</td>
-
-                        <td>@file.UploadTime.ToString("dd-MM-yyyy")</td>
-                        <td>
-                            <i class="bi bi-download" @onclick="()=>Download(file.Id)"></i>
-                        <i class="bi bi-trash" @onclick="()=>DeleteFile(file.Id)"></i>    
-                        </td>
-
-                    </tr>
-                }
-            </tbody>
-        </table>
-       
-
-</div>
- 
-
-
-<CreateComment TaskId="@task.Id"  UserId="task.AssigneeId"></CreateComment> *@
- 
 <script>
     
         document.querySelector('.btn-with-file').addEventListener('click', function () {

@@ -12,13 +12,12 @@
     <Microsoft.AspNetCore.Components.Forms.ValidationSummary />
 
     <div class="container">
-@*         <h5>Add Link @fromId (@FromTask.Title)</h5>
- *@
+
         <div class="d-flex p-2 flex-row row">
            
             <div class="col-6">
             <label for="rel" class="fw-bold">Relation</label>
-            <InputSelect id="relationshipType" @bind-Value="selectedRelationshipType" class="form-control">
+            <InputSelect id="rel" @bind-Value="selectedRelationshipType" class="form-control">
                 <option hidden value=0 >Select Relationship Type</option>
                 @foreach (var type in Enum.GetValues(typeof(TaskRelationshipType)).Cast<TaskRelationshipType>())
                 {
@@ -26,7 +25,8 @@
                 }
             </InputSelect>
             <ValidationMessage For="@(()=>relation.RelationshipType)" />
-        </div></div>
+     </div>
+     </div>
 
         <div class="d-flex p-2 flex-row row">
            
@@ -184,41 +184,7 @@
 <style>
 
     /* Example styling for the accordion */
-    .accordion-item {
-        margin-bottom: 10px;
-    }
-
-        .accordion-item .bi-link {
-            color: #007bff; /* Change color as needed */
-        }
-
-        .accordion-item ul {
-            list-style-type: none;
-            padding-left: 0;
-        }
-
-        .accordion-item li {
-            cursor: pointer;
-            padding: 5px 0;
-        }
-
-    .category-heading{
-        font-size:20px;
-        margin-left:5px;
-        font-weight:bold;
-
-    }
-
-    li {
-        cursor:pointer;
-        display: flex;
-        align-items: center;
-    }
-
-    i {
-        font-weight:bold;
-        margin-right: 8px; /* Space between icon and text */
-    }
+ 
 </style>
 @code {
 
